@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Jarvis — User Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .anchor { scroll-margin-top: 90px; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100">
+
+  <!-- TOP NAV -->
+  <header class="sticky top-0 z-20 backdrop-blur bg-slate-950/80 border-b border-slate-800">
+    <nav class="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+      <span class="font-bold text-white mr-2">Open Jarvis</span>
+      <a href="#what" class="text-slate-300 hover:text-emerald-300">What it is</a>
+      <a href="#stack" class="text-slate-300 hover:text-emerald-300">Tech stack</a>
+      <a href="#prereqs" class="text-slate-300 hover:text-emerald-300">Prerequisites</a>
+      <a href="#setup" class="text-slate-300 hover:text-emerald-300">One-time setup</a>
+      <a href="#run" class="text-slate-300 hover:text-emerald-300">Run it</a>
+      <a href="#workflow" class="text-slate-300 hover:text-emerald-300">Daily workflow</a>
+      <a href="#expand" class="text-slate-300 hover:text-emerald-300">Expand</a>
+      <a href="#trouble" class="text-slate-300 hover:text-emerald-300">Troubleshoot</a>
+    </nav>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-12 space-y-16">
+
+    <!-- HERO -->
+    <section class="space-y-4">
+      <div class="flex items-center gap-3 flex-wrap">
+        <span class="text-xs font-semibold uppercase tracking-wide bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 rounded-full px-3 py-1">User Guide</span>
+        <span class="text-xs font-semibold uppercase tracking-wide bg-sky-500/10 text-sky-300 border border-sky-500/30 rounded-full px-3 py-1">Powered-By-Webapp-LLM</span>
+        <span class="text-xs font-semibold uppercase tracking-wide bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/30 rounded-full px-3 py-1">Set once · auto-remember</span>
+      </div>
+      <h1 class="text-4xl font-bold">Open Jarvis — How to run it, use it, and grow it</h1>
+      <p class="text-slate-300 max-w-3xl">
+        Open Jarvis turns your projects into marketing: it ingests a repo, understands the product, plans LinkedIn/TikTok content, drafts
+        approval-based HTML storyboards &amp; landing pages, renders videos, and researches competitors — all driven by your
+        <span class="text-white font-semibold">Gemini Webapp license</span> through a managed Edge browser. No paid API key.
+      </p>
+    </section>
+
+    <!-- WHAT IT IS -->
+    <section id="what" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">1 · What you're running</h2>
+      <p class="text-slate-300 max-w-4xl text-sm">There are two layers. You mostly drive the bottom one — the browser module — and it feeds the top one.</p>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+          <h3 class="text-lg font-semibold text-sky-300 mb-2">Open Jarvis core</h3>
+          <p class="text-sm text-slate-400">The local-first AI framework + your project-to-marketing workflow: ingest → interpret → plan → draft → <span class="text-white">approve</span> → produce → review. Stores everything as HTML and files in a per-project workspace.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-6 border border-emerald-700/50 ring-1 ring-emerald-600/30">
+          <h3 class="text-lg font-semibold text-emerald-300 mb-2">Playwright MDM module — the engine</h3>
+          <p class="text-sm text-slate-400"><code>tools/playwright-mdm/</code>. Drives your signed-in Edge profile via CDP and uses the <span class="text-white">Gemini web app</span> as the brain. This is what you click into and set up once.</p>
+        </div>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-900/30 to-slate-900 rounded-2xl p-6 border border-emerald-700/40">
+        <h3 class="font-semibold text-white mb-2">The core idea — "Powered-By-Webapp-LLM"</h3>
+        <p class="text-sm text-slate-300 max-w-4xl">Instead of paying per token for a Gemini API key, Open Jarvis opens <code>gemini.google.com</code> inside the Edge profile you're already signed into and reads its answers. Your existing Gemini subscription does the reasoning; Open Jarvis orchestrates and stores the output.</p>
+      </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section id="stack" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">2 · Tech stack</h2>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+          <h3 class="text-lg font-semibold mb-3 text-sky-300">Core (Open Jarvis)</h3>
+          <ul class="text-sm text-slate-300 space-y-1.5 list-disc list-inside">
+            <li><span class="text-white">Python ≥ 3.10, &lt; 3.14</span> · Apache-2.0</li>
+            <li>Build: <code>hatchling</code>, packaged on PyPI</li>
+            <li>CLI: <code>click</code> · UI: <code>rich</code></li>
+            <li>HTTP: <code>httpx</code> · LLM SDK: <code>openai</code></li>
+            <li>Data: <code>datasets</code> · Search: <code>ddgs</code></li>
+            <li>Channels: <code>python-telegram-bot</code></li>
+            <li>Telemetry: <code>posthog</code> · GPU: <code>nvidia-ml-py</code></li>
+            <li>Desktop app: <span class="text-white">Tauri</span> (<code>desktop/src-tauri</code>)</li>
+            <li>Local models via <span class="text-white">Ollama</span></li>
+          </ul>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-6 border border-emerald-700/40">
+          <h3 class="text-lg font-semibold mb-3 text-emerald-300">Browser module</h3>
+          <ul class="text-sm text-slate-300 space-y-1.5 list-disc list-inside">
+            <li><span class="text-white">Node.js ≥ 18</span> (tested on 22), ESM</li>
+            <li><span class="text-white">Playwright</span> ^1.60 (Chromium/Edge over CDP)</li>
+            <li>Microsoft <span class="text-white">Edge</span> + remote debugging (<code>:9222</code>)</li>
+            <li>Brain: <span class="text-white">Gemini web app</span> (your license)</li>
+            <li>Built-in <code>node:http</code> agent UI (port 3000)</li>
+            <li>Tests: <code>node --test</code></li>
+            <li>Config: <code>jarvis-mdm.config.json</code> (remembered)</li>
+          </ul>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+          <h3 class="text-lg font-semibold mb-3 text-fuchsia-300">Output / production</h3>
+          <ul class="text-sm text-slate-300 space-y-1.5 list-disc list-inside">
+            <li><span class="text-white">HTML + Tailwind</span> for storyboards, landing pages, previews &amp; reports</li>
+            <li><span class="text-white">Remotion</span> (React) for video rendering</li>
+            <li>Per-project file workspace (markdown + HTML)</li>
+            <li>Shared <span class="text-white">publicity queue</span> for cross-project assets</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREREQS -->
+    <section id="prereqs" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">3 · Prerequisites (install once)</h2>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-3">
+        <ul class="text-sm text-slate-300 space-y-2 list-disc list-inside">
+          <li><span class="text-white">Node.js 18+</span> — check with <code>node --version</code></li>
+          <li><span class="text-white">Microsoft Edge</span>, with at least one profile signed into your Gemini license</li>
+          <li><span class="text-white">Python 3.10–3.13</span> (only needed for the Open Jarvis core, not the browser module)</li>
+          <li>For video: <span class="text-white">Remotion</span> deps when you reach the render step</li>
+        </ul>
+        <pre class="text-xs text-slate-300 bg-slate-950/60 rounded-xl p-4 border border-slate-800 overflow-x-auto"><code># one-time install of the browser module
+cd "tools/playwright-mdm"
+npm install
+npx playwright install</code></pre>
+      </div>
+    </section>
+
+    <!-- ONE-TIME SETUP (the headline feature) -->
+    <section id="setup" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">4 · One-time setup — pick your Edge + brain, it remembers forever</h2>
+      <p class="text-slate-300 max-w-4xl text-sm">
+        Run this <span class="text-white">once</span>. You choose which Edge profile to drive and which webapp powers Open Jarvis. The choice is
+        saved to <code>jarvis-mdm.config.json</code> — from then on the bridge auto-launches that exact profile. You never pick again.
+      </p>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-fuchsia-700/40 space-y-4">
+        <pre class="text-xs text-slate-200 bg-slate-950/60 rounded-xl p-4 border border-slate-800 overflow-x-auto"><code>cd "tools/playwright-mdm"
+npm run setup</code></pre>
+        <p class="text-sm text-slate-400">You'll see something like:</p>
+        <pre class="text-xs text-emerald-200/90 bg-black/40 rounded-xl p-4 border border-slate-800 overflow-x-auto"><code>Which Edge profile should Open Jarvis drive?
+(Pick the one already signed into the webapp LLM you want to use.)
+
+  1. Default   - Profile 1 (manfredsiew@hotmail.sg)
+  2. Profile 10 - Profile 4 (RSAF-user4@mindefsb.onmicrosoft.com)
+  3. Profile 15 - Profile 3 (siewck@defence.gov.sg)
+  ...
+Profile number: <span class="text-white">3</span>
+
+Which webapp should power Open Jarvis?
+  1. Gemini            (https://gemini.google.com)
+  2. Google AI Studio  (https://aistudio.google.com)
+  3. ChatGPT           (https://chatgpt.com)
+  4. Custom URL
+LLM number (Enter = 1 Gemini): <span class="text-white">1</span>
+
+✓ Saved. Open Jarvis will remember this from now on.</code></pre>
+        <div class="text-sm text-slate-300 bg-slate-950/50 rounded-xl p-4 border border-slate-800">
+          <p class="font-semibold text-white mb-1">That's the "click once, auto-remember" you asked for:</p>
+          <ul class="list-disc list-inside space-y-1 text-slate-400">
+            <li><span class="text-white">Edge profile</span> = the browser you click to run on → stored as <code>edgeProfile</code>.</li>
+            <li><span class="text-white">Powering webapp</span> = the brain → stored as <code>llm</code>.</li>
+            <li>Change it anytime by re-running <code>npm run setup</code> (it offers to reconfigure).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- RUN IT -->
+    <section id="run" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">5 · Running Open Jarvis</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-3">
+          <h3 class="text-lg font-semibold text-emerald-300">After setup — just call the brain</h3>
+          <p class="text-sm text-slate-400">Close Edge first (so the module owns a clean debug session), then:</p>
+          <pre class="text-xs text-slate-200 bg-slate-950/60 rounded-xl p-4 border border-slate-800 overflow-x-auto"><code>cd "tools/playwright-mdm"
+
+# the bridge AUTO-LAUNCHES your remembered
+# profile, then asks Gemini:
+npm run bridge -- "In one sentence, \
+  confirm you are reachable."</code></pre>
+          <p class="text-xs text-slate-500">No profile prompt — it reads <code>jarvis-mdm.config.json</code> and launches Edge for you.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-3">
+          <h3 class="text-lg font-semibold text-sky-300">Other entry points</h3>
+          <ul class="text-sm text-slate-300 space-y-2">
+            <li><code class="text-emerald-300">npm run gemini</code> — interactive CLI chat through your license</li>
+            <li><code class="text-emerald-300">npm run gemini-web</code> — local agent UI at <code>http://localhost:3000</code></li>
+            <li><code class="text-emerald-300">npm start</code> — attach + smoke-test an app URL</li>
+            <li><code class="text-emerald-300">npm test</code> — run the module's unit tests</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-3">
+        <h3 class="text-lg font-semibold">Calling it from Open Jarvis code</h3>
+        <p class="text-sm text-slate-400">The core never touches Playwright — it calls three functions:</p>
+        <pre class="text-xs sm:text-sm text-slate-300 bg-slate-950/60 rounded-xl p-4 border border-slate-800 overflow-x-auto"><code>import { askGemini, research, act, dispose } from './tools/playwright-mdm/jarvis-bridge.js';
+
+// REASON — produce content with your Gemini license
+const summary = await askGemini('Summarise this repo for a LinkedIn launch post: ...');
+
+// RESEARCH — look at a live page on a SEPARATE tab, analyse with Gemini
+const findings = await research(
+  'https://www.linkedin.com/in/<profile>/recent-activity/',
+  'Classify recent post types and infer their objectives',
+);
+
+// ACT — let Gemini plan browser commands, the agent runs them
+const { plan, results } = await act('Open the product page and extract the headline');
+
+await dispose(); // on shutdown (leaves Edge running)</code></pre>
+        <p class="text-xs text-slate-500">Gemini runs in a <span class="text-emerald-300">dedicated tab</span> that's never navigated away — research uses a separate page, so no clobbering. Every call is logged to <code>reports/gemini-sessions/</code>.</p>
+      </div>
+    </section>
+
+    <!-- DAILY WORKFLOW -->
+    <section id="workflow" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">6 · Using it for your goal (project → marketing)</h2>
+      <p class="text-slate-300 max-w-4xl text-sm">This maps the seven-stage workflow from your Architecture Plan onto concrete bridge calls. The <span class="text-white">approval gate</span> stays human — nothing publishes without you.</p>
+      <div class="space-y-3">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 flex gap-4">
+          <span class="text-emerald-300 font-bold text-lg shrink-0">1 · Ingest</span>
+          <p class="text-sm text-slate-300">Drop the repo/notes/raw HTML into <code>workspace/projects/&lt;name&gt;/source/</code>.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 flex gap-4">
+          <span class="text-emerald-300 font-bold text-lg shrink-0">2 · Interpret</span>
+          <p class="text-sm text-slate-300"><code>askGemini("Read this repo summary and write project-summary, goals, audience, challenges")</code> → save to <code>understanding/</code>.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 flex gap-4">
+          <span class="text-emerald-300 font-bold text-lg shrink-0">3 · Plan</span>
+          <p class="text-sm text-slate-300"><code>askGemini("Propose 5 LinkedIn + 5 TikTok ideas for this product")</code> → <code>marketing/*/ideas/</code>.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 flex gap-4">
+          <span class="text-emerald-300 font-bold text-lg shrink-0">4 · Draft</span>
+          <p class="text-sm text-slate-300"><code>askGemini</code> writes storyboard HTML, scripts, and landing-page HTML → <code>drafts/</code>, <code>landing-page/html/</code>, <code>video/storyboard/</code>.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-amber-700/50 flex gap-4">
+          <span class="text-amber-300 font-bold text-lg shrink-0">5 · Approve</span>
+          <p class="text-sm text-slate-300">Open the draft HTML in a browser, review, move from <code>approvals/pending/</code> → <code>approved/</code>. <span class="text-white">Human gate — required.</span></p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 flex gap-4">
+          <span class="text-emerald-300 font-bold text-lg shrink-0">6 · Produce</span>
+          <p class="text-sm text-slate-300">Render approved storyboards with <span class="text-white">Remotion</span> → <code>video/renders/</code>; finalise landing pages.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 flex gap-4">
+          <span class="text-emerald-300 font-bold text-lg shrink-0">7 · Review</span>
+          <p class="text-sm text-slate-300"><code>research()</code> monitors LinkedIn/competitors → <code>research/observations/</code>; feed learnings back into the next interpret pass.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPAND -->
+    <section id="expand" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">7 · Expanding it further</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+          <h3 class="font-semibold text-white mb-2">Add another webapp brain</h3>
+          <p class="text-sm text-slate-400">Add an entry to <code>LLM_PRESETS</code> in <code>config.js</code> (name + url). For a non-Gemini DOM, copy <code>gemini.js</code> to a new adapter and update the <code>SEL</code> selectors (input / send / stop / response). Re-run <code>npm run setup</code> and pick it.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+          <h3 class="font-semibold text-white mb-2">Add new browser actions</h3>
+          <p class="text-sm text-slate-400">Extend <code>executeCommand()</code> in <code>playwright-agent.js</code> with new <code>action</code> cases (e.g. <code>hover</code>, <code>selectOption</code>, <code>download</code>). They become instantly available to <code>act()</code>.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+          <h3 class="font-semibold text-white mb-2">Wire core stages to the bridge</h3>
+          <p class="text-sm text-slate-400">Call <code>askGemini</code>/<code>research</code> from the Interpret and Draft stages of Open Jarvis core so the whole pipeline runs on your license. Keep storing transcripts in <code>gemini-sessions/</code> for the learning loop.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+          <h3 class="font-semibold text-white mb-2">Harden it</h3>
+          <p class="text-sm text-slate-400">Add a "DOM drift" smoke check that fails fast if selectors change; add throttling/retries; multi-profile presets (e.g. one config per client) by parametrising the config path.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TROUBLESHOOT -->
+    <section id="trouble" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">8 · Troubleshooting &amp; guardrails</h2>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-amber-700/40">
+        <ul class="text-sm text-slate-300 space-y-2.5 list-disc list-inside">
+          <li><span class="text-white">"Cannot attach / it hangs":</span> your everyday Edge has many tabs/profiles (Playwright stalls attaching to all of them). <span class="text-white">Fully close Edge</span>, then run the bridge — the module launches a clean single-profile debug session it can attach to.</li>
+          <li><span class="text-white">"No Edge profile remembered":</span> run <code>npm run setup</code> first.</li>
+          <li><span class="text-white">Port 9222 busy:</span> some other Edge/automation owns it. Close all Edge windows and retry.</li>
+          <li><span class="text-white">Selectors broke:</span> Gemini changed its DOM — update <code>SEL</code> in <code>gemini.js</code>.</li>
+          <li><span class="text-white">Sign-in:</span> stays manual in the Edge profile; the module never automates Microsoft/Google login.</li>
+          <li><span class="text-white">Compliance:</span> automating a web app is governed by Google's ToS and your org's MDM policy. Keep this single-user and human-supervised; the approval gate means nothing auto-publishes.</li>
+        </ul>
+      </div>
+    </section>
+
+    <p class="text-xs text-slate-500 pt-4 border-t border-slate-800">
+      Companion docs: <span class="text-slate-300">Open Jarvis Architecture Plan.html</span> ·
+      <span class="text-slate-300">Open Jarvis Playwright Webapp-LLM Integration Plan.html</span> ·
+      module <span class="text-slate-300">tools/playwright-mdm/README.md</span>.
+    </p>
+  </main>
+
+<script>window.parent.postMessage({ action: "ready" }, "*");
+
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], {
+        apply(fn, thisArg, args) {
+          fn.apply(thisArg, args);
+          window.parent.postMessage({ action: 'console',
+            type: prop,
+            args: args.map((arg) => {
+              try {
+                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
+              } catch (e) {
+                return arg;
+              }
+            })
+          }, '*');
+        }
+      });
+    }
+    return target[prop];
+  }
+});
+</script></body>
+</html>

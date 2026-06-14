@@ -1,0 +1,30 @@
+{
+  "name": "openjarvis-playwright-mdm",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "jarvis-bridge.js",
+  "scripts": {
+    "ui": "node jarvis-ui.js",
+    "jarvis": "node jarvis.js",
+    "setup": "node setup.js",
+    "start": "node attach.js",
+    "gemini": "node gemini.js",
+    "gemini-web": "node gemini-server.js",
+    "bridge": "node jarvis-bridge.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "playwright",
+    "edge",
+    "mdm",
+    "gemini",
+    "webapp-llm",
+    "open-jarvis"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "Open Jarvis Playwright MDM browser module — drives the Gemini web app inside a signed-in Edge profile (Powered-By-Webapp-LLM). Sources: raid-ppcoe/Playwright-Module-for-MDM-Browsers + ElfredSeow/Playwright-for-MDM-Browser@Powered-By-Webapp-LLM.",
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}

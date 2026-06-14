@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Jarvis Architecture Plan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100">
+  <main class="max-w-6xl mx-auto px-6 py-12 space-y-10">
+    <section class="space-y-4">
+      <h1 class="text-4xl font-bold">Open Jarvis HTML Architecture Plan</h1>
+      <p class="text-slate-300 max-w-3xl">
+        Open Jarvis is a project-to-marketing automation system that ingests your repos, understands the product, creates approval-based storyboard HTML, generates Remotion videos, builds landing pages, and stores all publicity work in a shared queue.
+      </p>
+    </section>
+
+    <section class="grid md:grid-cols-2 gap-6">
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <h2 class="text-2xl font-semibold mb-3">Core operating model</h2>
+        <ol class="list-decimal list-inside space-y-2 text-slate-300">
+          <li>Ingest repo, notes, raw HTML, and research inputs</li>
+          <li>Interpret project context, goals, audience, and challenges</li>
+          <li>Plan LinkedIn and TikTok opportunities</li>
+          <li>Draft storyboard HTML, scripts, and landing pages</li>
+          <li>Approve before production</li>
+          <li>Produce videos and pages</li>
+          <li>Review and improve future outputs</li>
+        </ol>
+      </div>
+
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <h2 class="text-2xl font-semibold mb-3">Approval workflow</h2>
+        <div class="space-y-3 text-slate-300">
+          <div><span class="font-semibold text-white">1.</span> Ingest</div>
+          <div><span class="font-semibold text-white">2.</span> Interpret</div>
+          <div><span class="font-semibold text-white">3.</span> Draft</div>
+          <div><span class="font-semibold text-white">4.</span> Approve</div>
+          <div><span class="font-semibold text-white">5.</span> Produce</div>
+          <div><span class="font-semibold text-white">6.</span> Review</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+      <h2 class="text-2xl font-semibold mb-4">Suggested folder architecture</h2>
+      <pre class="text-sm text-slate-300 overflow-x-auto whitespace-pre-wrap"><code>open-jarvis/
+  workspace/
+    projects/
+      project-name/
+        source/
+          repo-clone/
+          notes/
+          raw-html/
+        understanding/
+          project-summary.md
+          goals.md
+          challenges.md
+          audience.md
+        marketing/
+          linkedin/
+            ideas/
+            drafts/
+            approved/
+            published/
+          tiktok/
+            ideas/
+            storyboards/
+            scripts/
+            approved/
+            published/
+        landing-page/
+          brief/
+          html/
+          tests/
+          revisions/
+        video/
+          storyboard/
+          html-screens/
+          scripts/
+          remotion/
+          renders/
+        research/
+          linkedin-monitoring/
+          competitors/
+          observations/
+        approvals/
+          pending/
+          approved/
+          rejected/
+    common-publicity/
+      queue/
+      templates/
+      assets/
+      brand-kit/
+      reusable-copy/</code></pre>
+    </section>
+
+    <section class="grid md:grid-cols-3 gap-6">
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <h3 class="text-xl font-semibold mb-2">Storyboard HTML</h3>
+        <p class="text-slate-300">One HTML file per scene or screen, including title, intent, on-screen text, voiceover, CTA, and transition notes.</p>
+      </div>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <h3 class="text-xl font-semibold mb-2">Landing page HTML</h3>
+        <p class="text-slate-300">Generate a previewable landing page, test it, then iterate before finalizing.</p>
+      </div>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <h3 class="text-xl font-semibold mb-2">Marketing preview HTML</h3>
+        <p class="text-slate-300">Preview LinkedIn and TikTok content in HTML before exporting or rendering.</p>
+      </div>
+    </section>
+
+    <section class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-3">
+      <h2 class="text-2xl font-semibold">Playwright MCP research module</h2>
+      <ul class="list-disc list-inside text-slate-300 space-y-2">
+        <li>Monitor selected LinkedIn profiles</li>
+        <li>Classify post types and recurring themes</li>
+        <li>Infer objectives behind posts</li>
+        <li>Store findings in the research folder</li>
+      </ul>
+    </section>
+
+    <section class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-3">
+      <h2 class="text-2xl font-semibold">Recommended build order</h2>
+      <ol class="list-decimal list-inside text-slate-300 space-y-2">
+        <li>Define folder structure</li>
+        <li>Build project ingestion and summarization</li>
+        <li>Add storyboard HTML approval workflow</li>
+        <li>Connect Remotion rendering</li>
+        <li>Add landing page generation and testing</li>
+        <li>Add LinkedIn research monitoring</li>
+        <li>Add shared publicity queue</li>
+        <li>Add learning from historical HTML</li>
+      </ol>
+    </section>
+  </main>
+<script>window.parent.postMessage({ action: "ready" }, "*"); 
+ 
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], {
+        apply(fn, thisArg, args) {
+          fn.apply(thisArg, args);
+          window.parent.postMessage({ action: 'console', 
+            type: prop, 
+            args: args.map((arg) => {
+              try {
+                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
+              } catch (e) {
+                return arg;
+              }
+            }) 
+          }, '*');
+        }
+      });
+    }
+    return target[prop];
+  }
+});
+</script></body>
+</html>

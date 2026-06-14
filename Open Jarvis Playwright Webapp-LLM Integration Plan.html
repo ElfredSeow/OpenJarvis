@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Jarvis — Playwright + Webapp-LLM Integration Plan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100">
+  <main class="max-w-6xl mx-auto px-6 py-12 space-y-10">
+
+    <!-- HERO -->
+    <section class="space-y-4">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-semibold tracking-wide uppercase bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 rounded-full px-3 py-1">Integration Plan</span>
+        <span class="text-xs font-semibold tracking-wide uppercase bg-sky-500/10 text-sky-300 border border-sky-500/30 rounded-full px-3 py-1">Powered-By-Webapp-LLM</span>
+      </div>
+      <h1 class="text-4xl font-bold">Open Jarvis × Playwright MDM Browser — Webapp-LLM Integration Plan</h1>
+      <p class="text-slate-300 max-w-3xl">
+        This plan extends the existing <span class="text-white font-semibold">Open Jarvis Architecture Plan</span> by adding a Playwright research &amp; automation
+        module that drives Microsoft Edge through your <span class="text-white font-semibold">managed (MDM) browser profile</span>. Crucially, the module does not
+        consume a paid Gemini API key — it drives the <span class="text-white font-semibold">Gemini web app</span> inside your already-signed-in Edge profile, so
+        Open Jarvis uses <span class="text-white font-semibold">your Gemini Webapp license</span> as the reasoning brain that decides what marketing content to produce.
+      </p>
+    </section>
+
+    <!-- WHAT WE'RE COMBINING -->
+    <section class="grid md:grid-cols-3 gap-6">
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <h3 class="text-lg font-semibold mb-2 text-sky-300">Source A — Runner shell</h3>
+        <p class="text-sm text-slate-300 mb-3">
+          <code class="text-emerald-300">raid-ppcoe/Playwright-Module-for-MDM-Browsers</code>
+        </p>
+        <p class="text-sm text-slate-400">
+          An agent-oriented e2e-runner template. Its README is a prompt that asks the coding agent to import the code, pick an Edge profile,
+          enter an app URL, and loop test → fix → HTML report → build/push until the app is bug-free.
+        </p>
+      </div>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <h3 class="text-lg font-semibold mb-2 text-sky-300">Source B — Engine</h3>
+        <p class="text-sm text-slate-300 mb-3">
+          <code class="text-emerald-300">ElfredSeow/Playwright-for-MDM-Browser</code>
+        </p>
+        <p class="text-sm text-slate-400">
+          <code>attach.js</code> handles Edge profile discovery, CDP attach (<code>127.0.0.1:9222</code>), navigation, and smoke-test
+          reporting. Reuses the signed-in MDM profile, so org sign-in stays manual/profile-based.
+        </p>
+      </div>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-emerald-700/50 ring-1 ring-emerald-600/30">
+        <h3 class="text-lg font-semibold mb-2 text-emerald-300">Source C — The brain</h3>
+        <p class="text-sm text-slate-300 mb-3">
+          branch <code class="text-emerald-300">Powered-By-Webapp-LLM</code>
+        </p>
+        <p class="text-sm text-slate-400">
+          <code>gemini.js</code> + <code>gemini-server.js</code> + <code>playwright-agent.js</code> drive the Gemini <em>web app</em> in Edge,
+          read its replies, parse JSON command blocks, and execute them. <span class="text-white">This is the license-powered LLM</span> Open Jarvis will call.
+        </p>
+      </div>
+    </section>
+
+    <!-- KEY IDEA: WEBAPP-LLM -->
+    <section class="bg-gradient-to-br from-emerald-900/30 to-slate-900 rounded-2xl p-6 border border-emerald-700/40 space-y-4">
+      <h2 class="text-2xl font-semibold">The key idea — "Powered-By-Webapp-LLM"</h2>
+      <p class="text-slate-300 max-w-4xl">
+        Open Jarvis normally needs an LLM to interpret a project, plan marketing, and write storyboards/scripts/landing copy. Instead of paying per-token for a
+        Gemini API key, the Webapp-LLM adapter sends those prompts to <code>gemini.google.com</code> through your authenticated Edge profile and scrapes the answer.
+        Your existing Gemini subscription does the thinking; Open Jarvis just orchestrates and stores the output.
+      </p>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-slate-950/60 rounded-xl p-5 border border-slate-800">
+          <h4 class="font-semibold text-white mb-2">Two ways Jarvis can call it</h4>
+          <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
+            <li><span class="text-emerald-300 font-semibold">Reason mode</span> — ask Gemini to <em>produce</em> content (summaries, ideas, scripts, copy). Jarvis stores the text.</li>
+            <li><span class="text-emerald-300 font-semibold">Act mode</span> — Gemini returns JSON command blocks (<code>navigate, click, type, extract, screenshot…</code>) that the Playwright agent runs to research live pages.</li>
+          </ul>
+        </div>
+        <div class="bg-slate-950/60 rounded-xl p-5 border border-slate-800">
+          <h4 class="font-semibold text-white mb-2">Why it fits Open Jarvis</h4>
+          <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
+            <li>No API key or per-token billing — uses the seat you already own.</li>
+            <li>MDM/org sign-in is respected (cookies live in the Edge profile).</li>
+            <li>Same browser session can both <em>research</em> LinkedIn/competitors and <em>generate</em> the marketing artifacts.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="text-xs text-amber-300/80">
+        ⚠️ Compliance note: scraping a web app is governed by Gemini/Google ToS and your org's MDM policy. Keep this as a single-user, human-supervised assistant
+        with throttling and an approval gate — do not run it as an unattended bulk service.
+      </p>
+    </section>
+
+    <!-- ARCHITECTURE FLOW -->
+    <section class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-4">
+      <h2 class="text-2xl font-semibold">End-to-end data flow</h2>
+      <pre class="text-xs sm:text-sm text-slate-300 overflow-x-auto whitespace-pre"><code>  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                            OPEN JARVIS CORE                              │
+  │   ingest → interpret → plan → draft → APPROVE → produce → review        │
+  └───────────────┬──────────────────────────────────────┬──────────────────┘
+                  │ prompt (reason)                       │ task (act/research)
+                  ▼                                       ▼
+        ┌───────────────────────┐               ┌───────────────────────┐
+        │  Webapp-LLM Adapter   │               │  Playwright MDM Module │
+        │  (gemini.js)          │               │  (attach.js)           │
+        │  sendPrompt()         │               │  discover Edge profile │
+        │  waitForResponse()    │               │  CDP attach :9222      │
+        │  extractLatestResp()  │               │  smoke-test report     │
+        └───────────┬───────────┘               └───────────┬───────────┘
+                    │                                        │
+                    ▼   drives the signed-in MDM Edge profile ▼
+            ┌───────────────────────────────────────────────────────┐
+            │   Microsoft Edge (your Gemini Webapp license session)  │
+            │   gemini.google.com   +   target/research pages        │
+            └───────────────────────────────────────────────────────┘
+                    │ JSON command blocks (act mode)
+                    ▼
+        ┌───────────────────────┐
+        │  playwright-agent.js  │  navigate / click / type / extract /
+        │  executeCommand()     │  screenshot / scroll / press / wait
+        └───────────────────────┘</code></pre>
+    </section>
+
+    <!-- FOLDER ADDITIONS -->
+    <section class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+      <h2 class="text-2xl font-semibold mb-4">Where it lands in the Open Jarvis folder architecture</h2>
+      <p class="text-sm text-slate-400 mb-4">New <code>tools/playwright-mdm/</code> module plus per-project research wiring. Additions are marked <span class="text-emerald-300">+</span>.</p>
+      <pre class="text-sm text-slate-300 overflow-x-auto whitespace-pre-wrap"><code>open-jarvis/
+  tools/
+<span class="text-emerald-300">    playwright-mdm/              + cloned from raid-ppcoe/Playwright-Module-for-MDM-Browsers
+      attach.js                 + Edge profile discovery + CDP attach + smoke test
+      gemini.js                 + Webapp-LLM adapter (drives gemini.google.com)
+      gemini-server.js          + local agent server (reason + act loop, port 3000)
+      playwright-agent.js       + executes Gemini's JSON command blocks
+      jarvis-bridge.js          + NEW: thin API Open Jarvis core calls (askGemini / research)
+      reports/                  + generated HTML smoke-test & fix reports
+      package.json              + scripts: start | gemini | gemini-web | test</span>
+  workspace/
+    projects/
+      project-name/
+        research/
+          linkedin-monitoring/
+<span class="text-emerald-300">          gemini-sessions/        + raw prompt/response transcripts (audit trail)</span>
+          competitors/
+          observations/
+        marketing/ ...           (storyboards/scripts now authored via Webapp-LLM)
+    common-publicity/
+      queue/                     (research findings + drafts flow here as before)</code></pre>
+    </section>
+
+    <!-- BRIDGE API -->
+    <section class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-4">
+      <h2 class="text-2xl font-semibold">The bridge — how Open Jarvis core talks to the module</h2>
+      <p class="text-slate-300 max-w-4xl text-sm">
+        A small <code>jarvis-bridge.js</code> exposes two functions to the rest of Open Jarvis. The core never touches Playwright directly — it just asks for
+        reasoning or research and gets text/JSON back, keeping the approval workflow intact.
+      </p>
+      <pre class="text-xs sm:text-sm text-slate-300 overflow-x-auto whitespace-pre bg-slate-950/60 rounded-xl p-4 border border-slate-800"><code>// tools/playwright-mdm/jarvis-bridge.js  (sketch)
+import { attachToEdge, getAttachedBrowserContext } from './attach.js';
+import { navigateToGemini, sendPrompt, waitForResponseComplete,
+         extractLatestResponse } from './gemini.js';
+
+// REASON: use the Gemini Webapp license to PRODUCE content
+export async function askGemini(prompt) {
+  const ctx  = await getAttachedBrowserContext();   // signed-in MDM Edge
+  const page = await ctx.newPage();
+  await navigateToGemini(page);
+  await sendPrompt(page, prompt);
+  await waitForResponseComplete(page);
+  return extractLatestResponse(page);               // → text for Jarvis to store
+}
+
+// ACT: research a live page via Gemini-planned commands
+export async function research(url, objective) {
+  return askGemini(`Visit ${url}. Goal: ${objective}.
+Reply ONLY with JSON command blocks the Playwright agent can run.`);
+}</code></pre>
+    </section>
+
+    <!-- BUILD ORDER -->
+    <section class="grid md:grid-cols-2 gap-6">
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <h2 class="text-2xl font-semibold mb-4">Integration build order</h2>
+        <ol class="list-decimal list-inside text-slate-300 space-y-2 text-sm">
+          <li><span class="text-white font-semibold">Clone the module</span> into <code>tools/playwright-mdm/</code> from <code>raid-ppcoe/Playwright-Module-for-MDM-Browsers</code>.</li>
+          <li><span class="text-white font-semibold">Overlay the Webapp-LLM branch</span> files (<code>gemini.js</code>, <code>gemini-server.js</code>, <code>playwright-agent.js</code>) from <code>ElfredSeow/Playwright-for-MDM-Browser @ Powered-By-Webapp-LLM</code>.</li>
+          <li><code>npm install</code> &amp; <code>npx playwright install</code>; verify <code>npm test</code> passes.</li>
+          <li><span class="text-white font-semibold">Pick the MDM Edge profile</span> once; confirm CDP attach on <code>127.0.0.1:9222</code> and a Gemini smoke prompt round-trips.</li>
+          <li>Write <code>jarvis-bridge.js</code> (<code>askGemini</code> / <code>research</code>).</li>
+          <li>Wire <span class="text-white font-semibold">Interpret</span> + <span class="text-white font-semibold">Draft</span> stages to call <code>askGemini</code>.</li>
+          <li>Wire <span class="text-white font-semibold">LinkedIn research</span> to call <code>research</code>; save transcripts to <code>gemini-sessions/</code>.</li>
+          <li>Keep the <span class="text-white font-semibold">approval gate</span> before any produce/publish step.</li>
+        </ol>
+      </div>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <h2 class="text-2xl font-semibold mb-4">Setup commands</h2>
+        <pre class="text-xs text-slate-300 overflow-x-auto whitespace-pre bg-slate-950/60 rounded-xl p-4 border border-slate-800"><code># 1. clone runner shell
+git clone https://github.com/raid-ppcoe/\
+Playwright-Module-for-MDM-Browsers.git \
+tools/playwright-mdm
+
+# 2. add Webapp-LLM engine
+git clone -b Powered-By-Webapp-LLM \
+https://github.com/ElfredSeow/\
+Playwright-for-MDM-Browser.git _webapp-llm
+# copy gemini.js gemini-server.js \
+# playwright-agent.js into tools/playwright-mdm/
+
+# 3. deps
+cd tools/playwright-mdm
+npm install && npx playwright install
+
+# 4. close Edge, then pick profile + attach
+npm start
+
+# 5. license-powered LLM, two entrypoints
+npm run gemini       # CLI reason loop
+npm run gemini-web   # local agent UI :3000</code></pre>
+      </div>
+    </section>
+
+    <!-- RESEARCH MODULE MAPPING -->
+    <section class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-3">
+      <h2 class="text-2xl font-semibold">Maps onto the existing "Playwright MCP research module"</h2>
+      <div class="grid md:grid-cols-2 gap-4 text-sm">
+        <ul class="list-disc list-inside text-slate-300 space-y-2">
+          <li><span class="text-white">Monitor selected LinkedIn profiles</span> → <code>research(profileUrl, "list recent posts")</code></li>
+          <li><span class="text-white">Classify post types &amp; themes</span> → <code>askGemini</code> on extracted post text</li>
+        </ul>
+        <ul class="list-disc list-inside text-slate-300 space-y-2">
+          <li><span class="text-white">Infer objectives behind posts</span> → <code>askGemini</code> reasoning pass</li>
+          <li><span class="text-white">Store findings</span> → <code>research/observations/</code> + <code>gemini-sessions/</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- RISKS / GUARDRAILS -->
+    <section class="bg-slate-900 rounded-2xl p-6 border border-amber-700/40 space-y-3">
+      <h2 class="text-2xl font-semibold text-amber-200">Guardrails &amp; open questions</h2>
+      <ul class="list-disc list-inside text-slate-300 space-y-2 text-sm">
+        <li><span class="text-white">Fragility:</span> the adapter targets Gemini's DOM selectors — they change. Keep selectors in one config and add a "DOM drift" smoke check.</li>
+        <li><span class="text-white">ToS / MDM policy:</span> confirm web-app automation is permitted on your managed device; keep it single-user and human-supervised.</li>
+        <li><span class="text-white">Rate &amp; reliability:</span> throttle requests, retry on stop-button timeouts, and never auto-publish without the approval gate.</li>
+        <li><span class="text-white">Auth:</span> sign-in stays manual in the Edge profile; the module never automates Microsoft/Google login.</li>
+        <li><span class="text-emerald-300">Resolved &amp; implemented:</span> Gemini runs in a <em>dedicated tab</em> that is created once and never navigated away; <code>research()</code> uses a separate page for the target URL, so there is no navigation clobbering.</li>
+      </ul>
+    </section>
+
+    <p class="text-xs text-slate-500 pt-4">
+      Companion to <span class="text-slate-300">Open Jarvis Architecture Plan.html</span>. Sources:
+      raid-ppcoe/Playwright-Module-for-MDM-Browsers · ElfredSeow/Playwright-for-MDM-Browser @ Powered-By-Webapp-LLM.
+    </p>
+  </main>
+
+<script>window.parent.postMessage({ action: "ready" }, "*");
+
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], {
+        apply(fn, thisArg, args) {
+          fn.apply(thisArg, args);
+          window.parent.postMessage({ action: 'console',
+            type: prop,
+            args: args.map((arg) => {
+              try {
+                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
+              } catch (e) {
+                return arg;
+              }
+            })
+          }, '*');
+        }
+      });
+    }
+    return target[prop];
+  }
+});
+</script></body>
+</html>

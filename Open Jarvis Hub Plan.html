@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Jarvis Hub — Plan &amp; Mockups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .anchor { scroll-margin-top: 80px; }
+    /* fake app window chrome for "screenshots" */
+    .win { border-radius: 14px; overflow: hidden; border: 1px solid #1e293b; box-shadow: 0 30px 60px -20px rgba(0,0,0,.7); }
+    .win-bar { background: #0b1220; border-bottom: 1px solid #1e293b; }
+    .dot { width: 11px; height: 11px; border-radius: 9999px; display: inline-block; }
+    .mock { background: #020617; }
+    .navitem { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; font-size:13px; }
+    .navitem.active { background:#0f2a22; color:#6ee7b7; border:1px solid #134e3a; }
+    .navitem.idle { color:#94a3b8; }
+    .navitem.idle:hover { background:#0f172a; }
+    .tag { font-size:10px; padding:1px 7px; border-radius:9999px; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100">
+
+  <header class="sticky top-0 z-20 backdrop-blur bg-slate-950/80 border-b border-slate-800">
+    <nav class="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+      <span class="font-bold text-white mr-2">Jarvis Hub · Plan</span>
+      <a href="#vision" class="text-slate-300 hover:text-emerald-300">Vision</a>
+      <a href="#arch" class="text-slate-300 hover:text-emerald-300">Architecture</a>
+      <a href="#modules" class="text-slate-300 hover:text-emerald-300">Modules</a>
+      <a href="#shots" class="text-slate-300 hover:text-emerald-300">Mockups</a>
+      <a href="#launch" class="text-slate-300 hover:text-emerald-300">Launcher</a>
+      <a href="#approve" class="text-slate-300 hover:text-emerald-300">Approve</a>
+      <a href="#rollout" class="text-slate-300 hover:text-emerald-300">Rollout</a>
+    </nav>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-12 space-y-16">
+
+    <!-- HERO -->
+    <section class="space-y-4">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="tag bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">PLAN — approve before build</span>
+        <span class="tag bg-sky-500/10 text-sky-300 border border-sky-500/30">Versatile hub</span>
+        <span class="tag bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/30">Zero-terminal</span>
+      </div>
+      <h1 class="text-4xl font-bold">Open Jarvis Hub — one app, many capabilities</h1>
+      <p class="text-slate-300 max-w-3xl">
+        Today's Marketing Studio is <span class="text-white font-semibold">one module</span>. This plan turns the local web panel into a
+        <span class="text-white font-semibold">capability hub</span> that also surfaces the existing OpenJarvis model — chat, deep research, code
+        assistant, scheduled monitors, morning digest, channels, memory &amp; skills — plus the browser/Webapp-LLM modules we built. Below are the
+        architecture, the module catalog, and <span class="text-white font-semibold">rendered mockups of every screen</span> so you can see it before we build it.
+      </p>
+      <div class="text-xs text-amber-300/80 bg-amber-500/5 border border-amber-700/40 rounded-xl p-3 max-w-3xl">
+        Nothing here is built yet — this is the proposal. The two quick wins you asked for (a double-click launcher and an in-UI Approve button)
+        are folded into this hub design (see §Launcher and §Approve).
+      </div>
+    </section>
+
+    <!-- VISION -->
+    <section id="vision" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">1 · Vision</h2>
+      <div class="grid md:grid-cols-3 gap-5">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-sky-300 mb-1.5">One window</h3>
+          <p class="text-sm text-slate-400">A single local app (no terminal) with a left sidebar of capabilities. Each is a "module" you click into.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-emerald-300 mb-1.5">Two engines underneath</h3>
+          <p class="text-sm text-slate-400">The existing <span class="text-white">OpenJarvis core</span> (Python, local-first) for chat/research/agents, and the <span class="text-white">Webapp-LLM browser bridge</span> for tasks that ride your Gemini license + MDM Edge.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-fuchsia-300 mb-1.5">Extensible by design</h3>
+          <p class="text-sm text-slate-400">A module registry: adding a capability = one entry + a panel. Marketing, Research, Browser Agent and the core agents all plug in the same way.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="arch" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">2 · Architecture</h2>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <pre class="text-[11px] sm:text-xs text-slate-300 overflow-x-auto whitespace-pre"><code>            ┌──────────────────────────────────────────────────────────────┐
+            │                     JARVIS HUB  (local web app)              │
+            │           http://localhost:4100 · sidebar of modules         │
+            │  Ask · Marketing · Research · Code · Monitors · Digest ·     │
+            │  Channels · Memory · Skills · Settings                       │
+            └───────────────┬───────────────────────────────┬──────────────┘
+                            │ module registry routes to…     │
+              ┌─────────────▼─────────────┐     ┌─────────────▼──────────────┐
+              │   OpenJarvis CORE         │     │  Webapp-LLM BROWSER bridge │
+              │   (Python · `jarvis` CLI) │     │  (Node · Playwright + Edge)│
+              │   agents · channels ·     │     │  askGemini · research ·    │
+              │   memory · skills ·       │     │  act · marketing pipeline  │
+              │   learning · eval         │     │  (your Gemini license)     │
+              └─────────────┬─────────────┘     └─────────────┬──────────────┘
+                            │                                  │
+                  local models (Ollama)            signed-in MDM Edge profile
+                  cloud only when needed            gemini.google.com (remembered)</code></pre>
+      </div>
+      <p class="text-sm text-slate-400 max-w-4xl">The Hub itself stays thin: it renders modules and forwards actions. Local-first work (chat, research, code) goes to the OpenJarvis <code>jarvis</code> CLI; anything that needs your Gemini Webapp license or a real browser goes to the bridge. The remembered <code>jarvis-mdm.config.json</code> (Edge profile + webapp) drives the browser side.</p>
+    </section>
+
+    <!-- MODULES -->
+    <section id="modules" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">3 · Module catalog</h2>
+      <p class="text-sm text-slate-400 max-w-4xl">Each maps to something real: an existing OpenJarvis agent config or a bridge function we already built.</p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-slate-800 rounded-xl overflow-hidden">
+          <thead class="bg-slate-900 text-slate-300">
+            <tr><th class="text-left p-3">Module</th><th class="text-left p-3">Backs onto</th><th class="text-left p-3">Status</th></tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 text-slate-300">
+            <tr><td class="p-3 text-white">Ask Jarvis (chat)</td><td class="p-3">Gemini bridge + local <code>jarvis ask</code> (switchable)</td><td class="p-3"><span class="tag bg-emerald-500/10 text-emerald-300">built</span></td></tr>
+            <tr><td class="p-3 text-white">Marketing Studio</td><td class="p-3">bridge pipeline (<code>jarvis.js</code>)</td><td class="p-3"><span class="tag bg-emerald-500/10 text-emerald-300">built</span></td></tr>
+            <tr><td class="p-3 text-white">Deep Research</td><td class="p-3">bridge <code>research()</code></td><td class="p-3"><span class="tag bg-emerald-500/10 text-emerald-300">built</span></td></tr>
+            <tr><td class="p-3 text-white">Code Assistant</td><td class="p-3">core <code>code-assistant.toml</code></td><td class="p-3"><span class="tag bg-amber-500/10 text-amber-300">wire-up</span></td></tr>
+            <tr><td class="p-3 text-white">Browser Agent</td><td class="p-3">bridge <code>act()</code> (Powered-By-Webapp-LLM)</td><td class="p-3"><span class="tag bg-emerald-500/10 text-emerald-300">built</span></td></tr>
+            <tr><td class="p-3 text-white">Scheduled Monitors</td><td class="p-3">bridge + opt-in scheduler (<code>monitors.js</code>)</td><td class="p-3"><span class="tag bg-emerald-500/10 text-emerald-300">built</span></td></tr>
+            <tr><td class="p-3 text-white">Morning Digest</td><td class="p-3">Gemini summary over monitor findings</td><td class="p-3"><span class="tag bg-emerald-500/10 text-emerald-300">built</span></td></tr>
+            <tr><td class="p-3 text-white">Channels</td><td class="p-3">Discord/Slack webhooks · Telegram in+out</td><td class="p-3"><span class="tag bg-emerald-500/10 text-emerald-300">built</span></td></tr>
+            <tr><td class="p-3 text-white">Memory · Skills</td><td class="p-3">core <code>memory</code> / <code>skills</code></td><td class="p-3"><span class="tag bg-slate-500/10 text-slate-300">later</span></td></tr>
+            <tr><td class="p-3 text-white">Settings</td><td class="p-3"><code>jarvis-mdm.config.json</code> + core config</td><td class="p-3"><span class="tag bg-emerald-500/10 text-emerald-300">built</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MOCKUPS -->
+    <section id="shots" class="anchor space-y-8">
+      <h2 class="text-2xl font-semibold">4 · Mockups — how it would actually look</h2>
+      <p class="text-sm text-slate-400">Rendered in the real dark theme the hub uses. These are the target screens.</p>
+
+      <!-- SHOT 1: DASHBOARD -->
+      <figure class="space-y-2">
+        <figcaption class="text-sm font-semibold text-slate-200">4.1 — Dashboard (capability launcher)</figcaption>
+        <div class="win">
+          <div class="win-bar px-4 py-2 flex items-center gap-2">
+            <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+            <span class="ml-3 text-[11px] text-slate-400">localhost:4100  ·  Jarvis Hub</span>
+          </div>
+          <div class="mock flex" style="min-height:420px">
+            <!-- sidebar -->
+            <aside class="w-56 border-r border-slate-800 p-3 space-y-1 bg-[#040813]">
+              <div class="px-2 py-2 text-white font-bold text-sm">⚡ Jarvis</div>
+              <div class="navitem active">💬 Ask Jarvis</div>
+              <div class="navitem idle">📣 Marketing Studio</div>
+              <div class="navitem idle">🔎 Deep Research</div>
+              <div class="navitem idle">🧑‍💻 Code Assistant</div>
+              <div class="navitem idle">🤖 Browser Agent</div>
+              <div class="navitem idle">⏰ Monitors</div>
+              <div class="navitem idle">📰 Morning Digest</div>
+              <div class="navitem idle">🔌 Channels</div>
+              <div class="navitem idle">🧠 Memory · Skills</div>
+              <div class="navitem idle mt-2 border-t border-slate-800 pt-3">⚙️ Settings</div>
+            </aside>
+            <!-- content -->
+            <section class="flex-1 p-6">
+              <div class="flex items-center justify-between mb-5">
+                <div><div class="text-lg font-semibold text-white">Good evening, Manfred</div>
+                <div class="text-xs text-slate-400">Local-first · Gemini license connected · Edge: Default profile</div></div>
+                <span class="tag bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">● ready</span>
+              </div>
+              <div class="grid grid-cols-3 gap-3">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4"><div class="text-2xl">💬</div><div class="text-sm text-white mt-2">Ask Jarvis</div><div class="text-[11px] text-slate-400">Local chat &amp; reasoning</div></div>
+                <div class="bg-slate-900 border border-emerald-700/40 rounded-xl p-4"><div class="text-2xl">📣</div><div class="text-sm text-white mt-2">Marketing Studio</div><div class="text-[11px] text-slate-400">Repo → posts, pages, video</div></div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4"><div class="text-2xl">🔎</div><div class="text-sm text-white mt-2">Deep Research</div><div class="text-[11px] text-slate-400">Multi-source briefs</div></div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4"><div class="text-2xl">🤖</div><div class="text-sm text-white mt-2">Browser Agent</div><div class="text-[11px] text-slate-400">Drives your Edge</div></div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4"><div class="text-2xl">⏰</div><div class="text-sm text-white mt-2">Monitors</div><div class="text-[11px] text-slate-400">2 scheduled</div></div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4"><div class="text-2xl">📰</div><div class="text-sm text-white mt-2">Morning Digest</div><div class="text-[11px] text-slate-400">Next: 7:00 AM</div></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </figure>
+
+      <!-- SHOT 2: MARKETING + APPROVE -->
+      <figure class="space-y-2">
+        <figcaption class="text-sm font-semibold text-slate-200">4.2 — Marketing Studio (run progress + outputs + Approve)</figcaption>
+        <div class="win">
+          <div class="win-bar px-4 py-2 flex items-center gap-2">
+            <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+            <span class="ml-3 text-[11px] text-slate-400">localhost:4100  ·  Marketing Studio</span>
+          </div>
+          <div class="mock flex" style="min-height:430px">
+            <aside class="w-56 border-r border-slate-800 p-3 space-y-1 bg-[#040813]">
+              <div class="px-2 py-2 text-white font-bold text-sm">⚡ Jarvis</div>
+              <div class="navitem idle">💬 Ask Jarvis</div>
+              <div class="navitem active">📣 Marketing Studio</div>
+              <div class="navitem idle">🔎 Deep Research</div>
+              <div class="navitem idle">🤖 Browser Agent</div>
+              <div class="navitem idle">⏰ Monitors</div>
+              <div class="navitem idle mt-2 border-t border-slate-800 pt-3">⚙️ Settings</div>
+            </aside>
+            <section class="flex-1 p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="text-sm text-white font-semibold">Project: <span class="text-emerald-300">openjarvis-launch</span></div>
+                <div class="flex gap-2">
+                  <button class="text-xs bg-slate-700 rounded-lg px-3 py-1.5">📁 Open drop folder</button>
+                  <button class="text-xs bg-emerald-600 rounded-lg px-3 py-1.5">▶ Run pipeline</button>
+                </div>
+              </div>
+              <div class="bg-black/50 border border-slate-800 rounded-lg p-3 text-[11px] text-emerald-200/90 h-32 overflow-hidden leading-5">
+                [1/5] Ingesting source… collected 9,210 chars<br>
+                [2/5] Interpreting project…<br>
+                &nbsp;&nbsp;wrote understanding/project-summary.md<br>
+                &nbsp;&nbsp;wrote understanding/goals.md<br>
+                [3/5] Planning content… wrote linkedin/ideas.md<br>
+                [4/5] Drafting… wrote landing-page/html/index.html<br>
+                <span class="text-emerald-400">✓ Done — review &amp; approve below.</span>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-slate-300 mb-2">Outputs</div>
+                <div class="flex flex-wrap gap-2 text-xs">
+                  <span class="px-2.5 py-1.5 rounded-lg border border-emerald-600 text-emerald-300">🔎 Landing page</span>
+                  <span class="px-2.5 py-1.5 rounded-lg border border-emerald-600 text-emerald-300">🔎 Storyboard scene</span>
+                  <span class="px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300">📄 LinkedIn ideas</span>
+                  <span class="px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300">📄 Project summary</span>
+                </div>
+              </div>
+              <div class="bg-slate-900 border border-amber-700/40 rounded-xl p-3 flex items-center justify-between">
+                <div class="text-xs text-slate-300">Approval gate — move drafts to <code>approved/</code> when happy.</div>
+                <div class="flex gap-2">
+                  <button class="text-xs bg-rose-600/80 rounded-lg px-3 py-1.5">✕ Reject</button>
+                  <button class="text-xs bg-emerald-600 rounded-lg px-3 py-1.5 font-medium">✓ Approve all</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </figure>
+
+      <div class="grid lg:grid-cols-2 gap-8">
+        <!-- SHOT 3: ASK -->
+        <figure class="space-y-2">
+          <figcaption class="text-sm font-semibold text-slate-200">4.3 — Ask Jarvis (chat)</figcaption>
+          <div class="win">
+            <div class="win-bar px-4 py-2 flex items-center gap-2">
+              <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+              <span class="ml-3 text-[11px] text-slate-400">Ask Jarvis</span>
+            </div>
+            <div class="mock p-4 space-y-3" style="min-height:300px">
+              <div class="flex justify-end"><div class="bg-sky-700/80 text-white text-xs rounded-xl rounded-br-sm px-3 py-2 max-w-[80%]">Summarise the OpenJarvis paper in 3 bullets</div></div>
+              <div class="flex justify-start"><div class="bg-slate-800 text-slate-200 text-xs rounded-xl rounded-bl-sm px-3 py-2 max-w-[85%]">• Local-first personal AI stack…<br>• Energy/FLOPs/cost as first-class metrics…<br>• Learning loop from local traces…</div></div>
+              <div class="flex gap-2 items-center pt-1">
+                <span class="tag bg-slate-700 text-slate-300">local · Ollama</span>
+                <input disabled class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs" placeholder="Ask anything…">
+                <button class="text-xs bg-sky-600 rounded-lg px-3 py-2">Send</button>
+              </div>
+            </div>
+          </div>
+        </figure>
+
+        <!-- SHOT 4: RESEARCH -->
+        <figure class="space-y-2">
+          <figcaption class="text-sm font-semibold text-slate-200">4.4 — Deep Research (browser-powered)</figcaption>
+          <div class="win">
+            <div class="win-bar px-4 py-2 flex items-center gap-2">
+              <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+              <span class="ml-3 text-[11px] text-slate-400">Deep Research</span>
+            </div>
+            <div class="mock p-4 space-y-3" style="min-height:300px">
+              <input disabled class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs" value="Monitor: linkedin.com/in/competitor — classify post themes">
+              <div class="bg-black/40 border border-slate-800 rounded-lg p-3 text-[11px] text-slate-300 leading-5">
+                <span class="text-emerald-300">● dedicated Gemini tab</span> · separate research tab opened<br>
+                Themes: thought-leadership (40%), product (30%), hiring (20%)…<br>
+                Inferred goal: top-of-funnel authority building<br>
+                <span class="text-slate-500">saved → research/observations/2026-06-14.md</span>
+              </div>
+              <div class="flex gap-2"><button class="text-xs bg-emerald-600 rounded-lg px-3 py-2">Run research</button><button class="text-xs bg-slate-700 rounded-lg px-3 py-2">Save to project</button></div>
+            </div>
+          </div>
+        </figure>
+
+        <!-- SHOT 5: MONITORS -->
+        <figure class="space-y-2">
+          <figcaption class="text-sm font-semibold text-slate-200">4.5 — Scheduled Monitors</figcaption>
+          <div class="win">
+            <div class="win-bar px-4 py-2 flex items-center gap-2">
+              <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+              <span class="ml-3 text-[11px] text-slate-400">Monitors</span>
+            </div>
+            <div class="mock p-4 space-y-2" style="min-height:300px">
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+                <div><div class="text-xs text-white">LinkedIn competitor scan</div><div class="text-[11px] text-slate-500">daily · 8:00 AM · next in 11h</div></div>
+                <span class="tag bg-emerald-500/10 text-emerald-300">on</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+                <div><div class="text-xs text-white">Repo release watcher</div><div class="text-[11px] text-slate-500">hourly · GitHub releases</div></div>
+                <span class="tag bg-emerald-500/10 text-emerald-300">on</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex items-center justify-between opacity-60">
+                <div><div class="text-xs text-white">Mentions digest</div><div class="text-[11px] text-slate-500">weekly · Mon 9:00 AM</div></div>
+                <span class="tag bg-slate-600/40 text-slate-300">off</span>
+              </div>
+              <button class="text-xs bg-sky-600 rounded-lg px-3 py-2 mt-1">+ New monitor</button>
+            </div>
+          </div>
+        </figure>
+
+        <!-- SHOT 6: SETTINGS -->
+        <figure class="space-y-2">
+          <figcaption class="text-sm font-semibold text-slate-200">4.6 — Settings (set once, remembered)</figcaption>
+          <div class="win">
+            <div class="win-bar px-4 py-2 flex items-center gap-2">
+              <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+              <span class="ml-3 text-[11px] text-slate-400">Settings</span>
+            </div>
+            <div class="mock p-4 space-y-3" style="min-height:300px">
+              <div class="text-xs text-slate-300">Edge profile to drive</div>
+              <div class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">Default — Profile 1 (manfredsiew@hotmail.sg) ▾</div>
+              <div class="text-xs text-slate-300">Webapp that powers Jarvis</div>
+              <div class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">Gemini  (gemini.google.com) ▾</div>
+              <div class="text-xs text-slate-300">Local model (core)</div>
+              <div class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">Ollama · llama3.1 ▾</div>
+              <button class="text-xs bg-emerald-600 rounded-lg px-3 py-2 mt-1">Remember this</button>
+              <div class="text-[11px] text-slate-500">Saved to jarvis-mdm.config.json — auto-launches this profile.</div>
+            </div>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- LAUNCHER -->
+    <section id="launch" class="anchor space-y-4">
+      <h2 class="text-2xl font-semibold">5 · Zero-terminal launcher</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-3">
+          <p class="text-sm text-slate-300">A <code>Start Jarvis.bat</code> on your Desktop. Double-click → it starts the hub server and opens your browser at the dashboard. No commands.</p>
+          <pre class="text-[11px] text-slate-300 bg-slate-950/60 rounded-xl p-4 border border-slate-800 overflow-x-auto"><code>@echo off
+cd /d "%~dp0tools\playwright-mdm"
+start "" http://localhost:4100
+node jarvis-ui.js</code></pre>
+          <p class="text-xs text-slate-500">Optional: a tiny tray/Tauri wrapper later for a true desktop app icon.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-2">
+          <h3 class="font-semibold text-white">What you do</h3>
+          <ol class="text-sm text-slate-300 list-decimal list-inside space-y-1">
+            <li>Double-click <span class="text-white">Start Jarvis</span>.</li>
+            <li>Browser opens to the dashboard.</li>
+            <li>Pick a module, click around. Done.</li>
+          </ol>
+          <p class="text-xs text-amber-300/80 mt-2">Reminder kept in-app: close Edge before browser-powered runs so Jarvis owns a clean session.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- APPROVE -->
+    <section id="approve" class="anchor space-y-4">
+      <h2 class="text-2xl font-semibold">6 · In-UI approval workflow</h2>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-3">
+        <p class="text-sm text-slate-300">Every generated item lands in <code>approvals/pending/</code>. The Marketing module shows them with preview + two buttons:</p>
+        <div class="flex flex-wrap gap-3 text-sm">
+          <span class="px-3 py-2 rounded-lg bg-emerald-600 text-white">✓ Approve all → moves to approvals/approved/</span>
+          <span class="px-3 py-2 rounded-lg bg-rose-600/80 text-white">✕ Reject → moves to approvals/rejected/</span>
+          <span class="px-3 py-2 rounded-lg border border-slate-700 text-slate-300">🔎 Preview each as real HTML</span>
+        </div>
+        <p class="text-xs text-slate-500">New endpoints: <code>POST /api/approve</code> and <code>POST /api/reject</code> (per-file or all). Nothing publishes without a click — the gate stays human.</p>
+      </div>
+    </section>
+
+    <!-- ROLLOUT -->
+    <section id="rollout" class="anchor space-y-4">
+      <h2 class="text-2xl font-semibold">7 · Build rollout (phased)</h2>
+      <div class="grid md:grid-cols-2 gap-5">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-emerald-700/40">
+          <h3 class="font-semibold text-emerald-300 mb-2">Phase 1 — Hub shell + quick wins</h3>
+          <ul class="text-sm text-slate-300 list-disc list-inside space-y-1">
+            <li>Refactor UI into sidebar + module registry</li>
+            <li><span class="text-white">Start Jarvis.bat</span> launcher</li>
+            <li><span class="text-white">Approve/Reject</span> buttons + endpoints</li>
+            <li>Marketing &amp; Settings modules (already built) slot in</li>
+          </ul>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-sky-300 mb-2">Phase 2 — Bridge modules</h3>
+          <ul class="text-sm text-slate-300 list-disc list-inside space-y-1">
+            <li>Ask Jarvis (chat via askGemini / local)</li>
+            <li>Deep Research (research())</li>
+            <li>Browser Agent (act())</li>
+          </ul>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-fuchsia-300 mb-2">Phase 3 — OpenJarvis core</h3>
+          <ul class="text-sm text-slate-300 list-disc list-inside space-y-1">
+            <li>Shell out to the <code>jarvis</code> CLI for chat / code / research</li>
+            <li>Monitors &amp; Morning Digest from existing configs</li>
+            <li>Surface local model picker (Ollama)</li>
+          </ul>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-slate-200 mb-2">Phase 4 — Reach</h3>
+          <ul class="text-sm text-slate-300 list-disc list-inside space-y-1">
+            <li>Channels (Telegram / Discord / Slack)</li>
+            <li>Memory &amp; Skills browser</li>
+            <li>Optional Tauri desktop wrapper</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- DECISIONS (LOCKED) -->
+    <section class="anchor space-y-4">
+      <h2 class="text-2xl font-semibold">8 · Decisions <span class="text-emerald-300">(locked)</span></h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-emerald-700/40">
+          <div class="text-xs uppercase tracking-wide text-emerald-300 mb-1">First modules</div>
+          <p class="text-sm text-slate-200">Ask Jarvis · Deep Research · Browser Agent · Scheduled Monitors — all four.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-emerald-700/40">
+          <div class="text-xs uppercase tracking-wide text-emerald-300 mb-1">Core engine</div>
+          <p class="text-sm text-slate-200">Both, <span class="text-white">switchable per module</span> — local <code>jarvis</code> CLI or the Gemini Webapp-LLM bridge.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-emerald-700/40">
+          <div class="text-xs uppercase tracking-wide text-emerald-300 mb-1">App form</div>
+          <p class="text-sm text-slate-200">Browser app now (:4100) → <span class="text-white">Tauri desktop app</span> as the eventual target.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-emerald-700/40">
+          <div class="text-xs uppercase tracking-wide text-emerald-300 mb-1">Approval</div>
+          <p class="text-sm text-slate-200"><span class="text-white">Approve-all per run</span> (one button per pipeline run).</p>
+        </div>
+      </div>
+      <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 text-sm text-slate-300">
+        <span class="text-white font-semibold">Build order locked in:</span> Phase 1 (Hub shell + launcher + Approve-all + bridge modules Ask/Research/Browser Agent) → Phase 2 (per-module engine toggle, wire local <code>jarvis</code> CLI) → Phase 3 (Monitors scheduler + Morning Digest) → Phase 4 (Channels + Tauri desktop wrapper).
+      </div>
+    </section>
+
+    <p class="text-xs text-slate-500 pt-4 border-t border-slate-800">
+      Companion docs: <span class="text-slate-300">Open Jarvis Architecture Plan.html</span> ·
+      <span class="text-slate-300">Open Jarvis Playwright Webapp-LLM Integration Plan.html</span> ·
+      <span class="text-slate-300">Open Jarvis User Guide.html</span>. This plan supersedes none — it proposes the hub that ties them together.
+    </p>
+  </main>
+
+<script>window.parent.postMessage({ action: "ready" }, "*");
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], { apply(fn, thisArg, args) {
+        fn.apply(thisArg, args);
+        window.parent.postMessage({ action: 'console', type: prop,
+          args: args.map((a) => { try { return JSON.stringify(a).replace(/^["']|["']$/g, ''); } catch (e) { return a; } }) }, '*');
+      }});
+    }
+    return target[prop];
+  }
+});
+</script></body>
+</html>

@@ -1,0 +1,5 @@
+node_modules/
+jarvis-mdm.config.json
+monitors.json
+channels.json
+reports/gemini-sessions/

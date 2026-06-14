@@ -1,0 +1,200 @@
+Gemini said
+HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storyboard Scene — AIS Tracker Launch</title>
+    <style>
+        :root {
+            --bg: #0b0d12;
+            --soft: #12151d;
+            --panel: #161a24;
+            --panel2: #1c2130;
+            --line: #262c3a;
+            --line2: #313a4d;
+            --text: #e8ecf4;
+            --muted: #99a2b8;
+            --faint: #6b7488;
+            --accent: #6ea8fe;
+            --accent2: #a78bfa;
+            --good: #5ad19a;
+            --bad: #f08a8a;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 40px 20px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, var(--panel), var(--soft));
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .header {
+            padding: 24px;
+            border-b: 1px solid var(--line);
+            background-color: var(--soft);
+        }
+        .scene-badge {
+            display: inline-block;
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--accent);
+            background: rgba(110, 168, 254, 0.1);
+            border: 1px solid rgba(110, 168, 254, 0.25);
+            padding: 4px 10px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 20px 24px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid var(--line);
+            font-size: 14px;
+        }
+        .meta-item strong {
+            color: var(--accent2);
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+        .content-block {
+            padding: 24px;
+            border-bottom: 1px solid var(--line);
+        }
+        .content-block:last-child {
+            border-bottom: none;
+        }
+        h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--faint);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h2::before {
+            content: "●";
+            color: var(--accent);
+            font-size: 10px;
+        }
+        .text-card {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 15px;
+            color: var(--muted);
+        }
+        .text-card b {
+            color: var(--text);
+        }
+        .voiceover {
+            border-left: 3px solid var(--accent2);
+            font-style: italic;
+            background: rgba(167, 139, 250, 0.05);
+        }
+        .onscreen {
+            font-family: monospace;
+            border-left: 3px solid var(--cyan);
+            background: rgba(103, 232, 249, 0.05);
+            color: var(--cyan);
+        }
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(180deg, var(--accent), #4f86d6);
+            color: var(--bg);
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 6px;
+            box-shadow: 0 4px 12px rgba(110,168,254,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <span class="scene-badge">Scene 03 · Core Validation</span>
+            <h1>The Broken Schema Breakthrough</h1>
+        </div>
+
+        <div class="meta-grid">
+            <div class="meta-item">
+                <strong>Scene Intent</strong>
+                Demonstrate the friction of corrupt tracking states versus the reliability of runtime data validation contracts.
+            </div>
+            <div class="meta-item">
+                <strong>Visual Style</strong>
+                High-contrast dark mode dashboard UI with smooth interactive kinetic animations and focal component highlights.
+            </div>
+        </div>
+
+        <div class="content-block">
+            <h2>On-Screen Visuals & Text</h2>
+            <div class="text-card onscreen">
+                [VISUAL]: A chaotic, flashing warning perimeter surrounds a broken task block. Suddenly, a code structural trace sweeps over the screen. The interface morphs effortlessly into a clean, locked Kanban card inside the active workspace columns.<br><br>
+                <b>[TEXT OVERLAY]:</b><br>
+                → runtime_contract: AISProjectManagerSchema<br>
+                → integrity_check: PASSED (100% Type-Safe)
+            </div>
+        </div>
+
+        <div class="content-block">
+            <h2>Voiceover Audio (VO)</h2>
+            <div class="text-card voiceover">
+                "Stop letting unverified text inputs corrupt your engineering pipeline logs. AIS Tracker anchors your sprints directly to rigid runtime validation schemas, converting operational updates into deterministic data structures instantly."
+            </div>
+        </div>
+
+        <div class="content-block">
+            <h2>Call To Action (CTA)</h2>
+            <div>
+                <p class="text-card" style="margin-bottom: 12px;">Interactive overlay button scales up dynamically at the center-bottom tracking coordinates.</p>
+                <a href="#" class="cta-btn">Initialize Free Deployment Sandbox</a>
+            </div>
+        </div>
+
+        <div class="content-block">
+            <h2>Transition Dynamics</h2>
+            <div class="text-card">
+                A hard data whip-pan to the right matches a mechanical keyboard shutter sound effect, translating smoothly into an exposed interactive code block section layout.
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

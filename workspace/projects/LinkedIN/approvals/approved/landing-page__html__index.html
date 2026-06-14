@@ -1,0 +1,308 @@
+Gemini said
+HTML
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIS Project Tracker — Schema-Driven Workflow Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#0b0d12',
+                        soft: '#12151d',
+                        panel: '#161a24',
+                        panel2: '#1c2130',
+                        line: '#262c3a',
+                        line2: '#313a4d',
+                        accent: '#6ea8fe',
+                        accent2: '#a78bfa',
+                        good: '#5ad19a',
+                        bad: '#f08a8a',
+                        warn: '#f5c97b',
+                        cyan: '#67e8f9',
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+                        mono: ['"SF Mono"', 'ui-monospace', 'Menlo', 'Consolas', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: radial-gradient(900px 460px at 80% -12%, rgba(167, 139, 250, 0.12), transparent 60%), #0b0d12;
+        }
+    </style>
+</head>
+<body class="text-[#e8ecf4] font-sans antialiased min-h-screen">
+
+    <header class="border-b border-line bg-bg/80 backdrop-blur sticky top-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="w-3 h-3 rounded-full bg-accent animate-pulse"></span>
+                <span class="font-mono text-sm tracking-wider uppercase font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent to-accent2">AIS_TRACKER</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-8 text-sm text-[#99a2b8]">
+                <a href="#features" class="hover:text-text transition-colors">Architecture</a>
+                <a href="#interface" class="hover:text-text transition-colors">Interface</a>
+                <a href="#data-integrity" class="hover:text-text transition-colors">Data Integrity</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <a href="#cta" class="bg-gradient-to-r from-accent/10 to-accent2/10 border border-accent/30 text-accent hover:border-accent/80 px-4 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all">Launch Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 text-xs font-mono uppercase tracking-widest text-accent bg-accent/10 border border-accent/20 rounded-full mb-6">
+                <span>●</span> Core Build v2.0
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#e8ecf4] max-w-4xl mx-auto leading-[1.1]">
+                The Schema-Driven Engine for Technical <span class="bg-clip-text text-transparent bg-gradient-to-r from-accent to-accent2">Product Streams</span>
+            </h1>
+            <p class="mt-6 text-base sm:text-lg text-[#99a2b8] max-w-2xl mx-auto leading-relaxed">
+                Stop fighting loose task fields and broken status pipelines. Enforce type-safe entity management, strict media asset validation, and immediate open portability out of the box.
+            </p>
+            <div class="mt-10 flex flex-wrap justify-center gap-4">
+                <a href="#cta" class="bg-gradient-to-r from-accent to-accent2 text-bg font-bold px-8 py-3.5 rounded-xl text-sm transition-transform hover:scale-[1.02] shadow-lg shadow-accent2/10">
+                    Get Started Instantly
+                </a>
+                <a href="#interface" class="bg-panel2/60 border border-line hover:border-line2 text-text px-8 py-3.5 rounded-xl text-sm font-medium transition-colors">
+                    View Live Preview
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="interface" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-gradient-to-b from-panel to-soft border border-line rounded-2xl p-4 sm:p-6 shadow-2xl relative">
+            
+            <div class="flex items-center justify-between border-b border-line pb-4 mb-6">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-bad/40 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-warn/40 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-good/40 inline-block"></span>
+                    <span class="text-xs font-mono text-[#6b7488] ml-2">tracker_instance_main.tsx</span>
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-3 py-1 rounded bg-panel2 border border-line text-xs font-mono text-accent flex items-center gap-1.5">
+                        <span>+</span> CreateProjectDialog
+                    </button>
+                    <button class="px-3 py-1 rounded bg-panel2 border border-line text-xs font-mono text-[#99a2b8] hover:text-text flex items-center gap-1.5">
+                        <span>📥</span> ExportProjectsDialog
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div class="bg-soft/40 p-4 border border-line/60 rounded-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-mono tracking-wider uppercase text-[#6b7488]">Backlog</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-panel2 text-[#99a2b8] border border-line">02</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="bg-panel2 border border-line hover:border-line2 p-4 rounded-xl transition-all cursor-pointer group">
+                            <div class="flex justify-between items-start gap-2 mb-2">
+                                <span class="text-xs font-mono text-accent2 bg-accent2/10 border border-accent2/20 px-2 py-0.5 rounded">MEDIA_ASSET</span>
+                            </div>
+                            <h4 class="text-sm font-semibold text-[#e8ecf4] mb-1 group-hover:text-accent transition-colors">Refine Core Video Assets</h4>
+                            <p class="text-xs text-[#99a2b8] line-clamp-2">Validate multi-resolution outputs against ProjectMediaURLSchema parameters.</p>
+                            <div class="mt-3 pt-3 border-t border-line/50 flex justify-between items-center text-[11px] text-[#6b7488]">
+                                <span class="font-mono">ID: AIS-401</span>
+                                <span class="text-[#f5c97b]">⚠️ Low Risk</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-panel2 border border-line hover:border-line2 p-4 rounded-xl transition-all cursor-pointer group">
+                            <div class="flex justify-between items-start gap-2 mb-2">
+                                <span class="text-xs font-mono text-cyan bg-cyan/10 border border-cyan/20 px-2 py-0.5 rounded">ENGINEERING</span>
+                            </div>
+                            <h4 class="text-sm font-semibold text-[#e8ecf4] mb-1 group-hover:text-accent transition-colors">Implement Validator Interceptors</h4>
+                            <p class="text-xs text-[#99a2b8] line-clamp-2">Inject strict runtime guardrails using verified model validation structures.</p>
+                            <div class="mt-3 pt-3 border-t border-line/50 flex justify-between items-center text-[11px] text-[#6b7488]">
+                                <span class="font-mono">ID: AIS-402</span>
+                                <span class="text-accent">● Staged</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-soft/40 p-4 border border-line/60 rounded-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-mono tracking-wider uppercase text-accent">In Progress</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">01</span>
+                    </div>
+
+                    <div class="bg-panel2 border border-accent/40 bg-gradient-to-b from-panel2 to-soft p-4 rounded-xl relative shadow-lg">
+                        <div class="absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full bg-accent animate-ping"></div>
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <span class="text-xs font-mono text-accent bg-accent/10 border border-accent/20 px-2 py-0.5 rounded">INFRASTRUCTURE</span>
+                            <span class="text-[10px] text-accent font-mono uppercase tracking-wider">Syncing</span>
+                        </div>
+                        <h4 class="text-sm font-semibold text-[#e8ecf4] mb-1">Verify Schema Contracts</h4>
+                        <p class="text-xs text-[#99a2b8] mb-3">Enforcing integrity down to the AISProjectManagerSchema data architecture tier.</p>
+                        
+                        <div class="bg-bg border border-line rounded-lg p-2 font-mono text-[11px] space-y-1 text-[#6b7488]">
+                            <div><span class="text-good">✓</span> status: <span class="text-[#e8ecf4]">"IN_PROGRESS"</span></div>
+                            <div><span class="text-good">✓</span> schema_match: <span class="text-accent2">true</span></div>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-line/50 flex justify-between items-center text-[11px] text-[#6b7488]">
+                            <span class="font-mono">ID: AIS-382</span>
+                            <span class="text-good">● Active Code</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-soft/40 p-4 border border-line/60 rounded-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-mono tracking-wider uppercase text-good">Completed</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-good/10 text-good border border-good/20">01</span>
+                    </div>
+
+                    <div class="bg-panel2 border border-line p-4 rounded-xl opacity-75">
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <span class="text-xs font-mono text-[#6b7488] bg-panel/80 border border-line px-2 py-0.5 rounded">DEVOPS</span>
+                        </div>
+                        <h4 class="text-sm font-semibold text-[#99a2b8] line-through mb-1">Establish Export Enums</h4>
+                        <p class="text-xs text-[#6b7488] line-clamp-2">Mapped status configurations via verified enum converters globally.</p>
+                        <div class="mt-3 pt-3 border-t border-line/50 flex justify-between items-center text-[11px] text-[#6b7488]">
+                            <span class="font-mono">ID: AIS-301</span>
+                            <span class="text-good">✓ Verified</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+        <div class="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
+            <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-[#e8ecf4]">
+                Engineered to Eliminate Process Drift
+            </h2>
+            <p class="mt-4 text-[#99a2b8] text-sm sm:text-base">
+                Generic tracking software treats information as simple loose text fields. AIS protects system data accuracy at the compiler and validation abstraction levels.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            <div class="bg-gradient-to-b from-panel to-soft border border-line p-6 rounded-xl relative group">
+                <div class="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent font-mono text-sm mb-4">
+                    {}
+                </div>
+                <h3 class="text-base font-semibold text-[#e8ecf4] mb-2">Deterministic Schemas</h3>
+                <p class="text-xs text-[#99a2b8] leading-relaxed">
+                    Powered by runtime validation schemas. Every operational task creation or shift strictly complies with deep metadata data layout expectations.
+                </p>
+            </div>
+
+            <div class="bg-gradient-to-b from-panel to-soft border border-line p-6 rounded-xl relative group">
+                <div class="w-8 h-8 rounded-lg bg-accent2/10 border border-accent2/20 flex items-center justify-center text-accent2 font-mono text-sm mb-4">
+                    🔗
+                </div>
+                <h3 class="text-base font-semibold text-[#e8ecf4] mb-2">Media URL Validations</h3>
+                <p class="text-xs text-[#99a2b8] leading-relaxed">
+                    Media management tracks assets natively. Internal schemas actively challenge inputs ensuring asset strings represent secure, queryable location layers.
+                </p>
+            </div>
+
+            <div class="bg-gradient-to-b from-panel to-soft border border-line p-6 rounded-xl relative group">
+                <div class="w-8 h-8 rounded-lg bg-cyan/10 border border-cyan/20 flex items-center justify-center text-cyan font-mono text-sm mb-4">
+                    📦
+                </div>
+                <h3 class="text-base font-semibold text-[#e8ecf4] mb-2">Zero Platform Lock-In</h3>
+                <p class="text-xs text-[#99a2b8] leading-relaxed">
+                    Extract data cleanly whenever you need it. Direct schema tools bypass proprietary tracking databases to populate external system data warehouses instantly.
+                </p>
+            </div>
+
+            <div class="bg-gradient-to-b from-panel to-soft border border-line p-6 rounded-xl relative group">
+                <div class="w-8 h-8 rounded-lg bg-good/10 border border-good/20 flex items-center justify-center text-good font-mono text-sm mb-4">
+                    ⚡
+                </div>
+                <h3 class="text-base font-semibold text-[#e8ecf4] mb-2">Instant Layout Synced</h3>
+                <p class="text-xs text-[#99a2b8] leading-relaxed">
+                    Zero complex configuration steps required. Internal enums safely transform low-level parameters into gorgeous interactive dashboards out of the box.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="data-integrity" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-line/50">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <span class="text-xs font-mono text-accent2 uppercase tracking-widest block mb-2">Data Integrity</span>
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-[#e8ecf4] mb-4">
+                    Keep Cross-Functional Teams Synchronized Flawlessly
+                </h2>
+                <p class="text-sm text-[#99a2b8] leading-relaxed mb-6">
+                    While non-technical operators interact with our simple, smooth drag-and-drop dashboard view, the platform processes data validations quietly below the surface. This unique architecture ensures developers, product owners, and creative producers share a truly uncorrupted dashboard context.
+                </p>
+                <ul class="space-y-3 font-mono text-xs text-[#99a2b8]">
+                    <li class="flex items-center gap-2"><span class="text-accent">→</span> Automated Status Conversion Rules</li>
+                    <li class="flex items-center gap-2"><span class="text-accent">→</span> Real-Time Schema Matching Guardrails</li>
+                    <li class="flex items-center gap-2"><span class="text-accent">→</span> Instant Structural Serialization</li>
+                </ul>
+            </div>
+            
+            <div class="bg-panel rounded-xl border border-line2 p-5 font-mono text-xs shadow-xl overflow-x-auto">
+                <div class="flex items-center gap-1.5 pb-3 border-b border-line mb-3 text-[#6b7488]">
+                    <span class="w-2.5 h-2.5 rounded-full bg-line2"></span>
+                    <span>validator-runtime-engine.log</span>
+                </div>
+                <div class="space-y-1.5">
+                    <div class="text-[#6b7488]">[2026-06-14 20:46:39] <span class="text-accent">INFO</span> Booting validator runtime context...</div>
+                    <div class="text-[#6b7488]">[2026-06-14 20:46:39] <span class="text-accent">INFO</span> Loaded <span class="text-text">AISProjectManagerSchema</span></div>
+                    <div class="text-[#6b7488]">[2026-06-14 20:46:39] <span class="text-accent">INFO</span> Loaded <span class="text-accent2">ProjectMediaURLSchema</span></div>
+                    <div class="text-[#6b7488]">[2026-06-14 20:46:40] <span class="text-good">SUCCESS</span> Data integrity validation challenge passed. 0 anomalies discovered.</div>
+                    <div class="pt-2 text-cyan font-bold">&gt; System ready for incoming project pipelines_</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="cta" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 relative">
+        <div class="relative bg-gradient-to-r from-panel via-soft to-panel border border-line px-6 py-12 sm:p-16 rounded-3xl overflow-hidden text-center shadow-2xl">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(110,168,254,0.1),transparent_50%)]"></div>
+            
+            <div class="relative z-10 max-w-2xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#e8ecf4] mb-4">
+                    Ready for Structural Process Clarity?
+                </h2>
+                <p class="text-sm sm:text-base text-[#99a2b8] mb-8 leading-relaxed">
+                    Deploy our schema-driven tracking dashboard inside your development workspace today and stop guessing your workflow status reliability.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+                    <input type="email" placeholder="Enter corporate email address" class="bg-bg border border-line focus:border-accent outline-none rounded-xl px-4 py-3 text-sm text-text placeholder-[#6b7488] flex-grow font-mono transition-colors">
+                    <button class="bg-gradient-to-r from-accent to-accent2 hover:opacity-90 text-bg font-bold px-6 py-3 rounded-xl text-sm transition-opacity whitespace-nowrap">
+                        Initialize Deployment
+                    </button>
+                </div>
+                <div class="mt-6 text-xs font-mono text-[#6b7488]">
+                    Open-source standalone build instance • v2.0.0 Stable Deployment
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-line bg-soft/50 py-12 text-center text-xs text-[#6b7488] font-mono">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
+            <div>PowerCodex Architectural Platform Layout Architecture Engine</div>
+            <div class="text-[#313a4d]">&copy; 2026 AIS Tracker System. All rights reserved globally.</div>
+        </div>
+    </footer>
+
+</body>
+</html>
