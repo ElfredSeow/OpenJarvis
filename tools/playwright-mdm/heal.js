@@ -56,7 +56,7 @@ function scoreCandidate(c, keywords, requireEditable) {
  */
 export async function resolveElement(page, {
   intent, staticSelectors = [], keywords = [], requireEditable = false,
-  onStep = () => {}, useGemini = true, geminiAsk = null,
+  onStep = () => {}, useGemini = true, useHeuristic = true, geminiAsk = null,
 } = {}) {
   // 1 · STATIC
   for (const sel of staticSelectors) {
@@ -71,7 +71,7 @@ export async function resolveElement(page, {
   const scored = candidates
     .map((c) => ({ c, score: scoreCandidate(c, keywords, requireEditable) }))
     .sort((a, b) => b.score - a.score);
-  if (scored.length && scored[0].score > 0) {
+  if (useHeuristic && scored.length && scored[0].score > 0) {
     const c = scored[0].c;
     onStep({ label: `🔧 Self-corrected (DOM): "${c.text || c.aria || c.placeholder || c.tag}" → ${intent}` });
     return { locator: page.locator(`[data-jarvis-cand="${c.i}"]`).first(), how: 'dom' };

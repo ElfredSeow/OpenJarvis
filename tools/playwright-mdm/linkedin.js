@@ -61,8 +61,11 @@ async function clickFirst(page, selectors, { timeout = 8000 } = {}) {
  * @returns {ok, ready, posted:false, postButtonFound, imageCount, typedText}
  */
 export async function composeLinkedInPost({
-  text = '', images = [], url = LINKEDIN_FEED, keepOpen = true, onStep = () => {},
+  text = '', images = [], url = LINKEDIN_FEED, keepOpen = true, healMode = 'auto', onStep = () => {},
 } = {}) {
+  // 'vision' forces the screenshot→Gemini self-correction tier (skips the DOM
+  // heuristic) so we can prove the engine can see the screen and recover.
+  const useHeuristic = healMode !== 'vision';
   const ctx = await getEdgeContext();
   const page = await ctx.newPage();
   const shot = async (label, extra = {}) => {
@@ -83,7 +86,7 @@ export async function composeLinkedInPost({
       intent: 'open the "Start a post" composer',
       staticSelectors: SEL.startPost,
       keywords: ['start a post', 'start', 'create a post', 'create', 'post'],
-      onStep,
+      onStep, useHeuristic,
     });
     await trigger.locator.click({ timeout: 8000 });
 
@@ -92,7 +95,7 @@ export async function composeLinkedInPost({
       staticSelectors: SEL.editor,
       keywords: ['what do you want to talk about', 'talk', 'write', 'editor', 'text', 'post'],
       requireEditable: true,
-      onStep,
+      onStep, useHeuristic,
     });
     const editor = editorRes.locator;
     await editor.click();

@@ -193,6 +193,7 @@ const server = createServer(async (req, res) => {
       const name = url.searchParams.get('project') ?? '';
       const text = url.searchParams.get('text') ?? '';
       const keepOpen = url.searchParams.get('keep') !== '0';
+      const healMode = url.searchParams.get('heal') === 'vision' ? 'vision' : 'auto';
       const targetUrl = url.searchParams.get('url') || undefined;
       let rels = [];
       try { rels = JSON.parse(url.searchParams.get('images') || '[]'); } catch { rels = []; }
@@ -206,7 +207,7 @@ const server = createServer(async (req, res) => {
       const emit = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
       try {
         const { composeLinkedInPost } = await import('./linkedin.js');
-        emit('done', await composeLinkedInPost({ text, images, url: targetUrl, keepOpen, onStep: (s) => emit('step', s) }));
+        emit('done', await composeLinkedInPost({ text, images, url: targetUrl, keepOpen, healMode, onStep: (s) => emit('step', s) }));
       } catch (e) { emit('error', e.message); }
       return res.end();
     }

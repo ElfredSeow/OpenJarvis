@@ -1,15 +1,35 @@
 import { spawn } from 'node:child_process';
+import net from 'node:net';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline/promises';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { chromium } from 'playwright';
 
-const CDP_ENDPOINT = 'http://127.0.0.1:9222';
+const DEFAULT_CDP_PORT = 9222;
+const cdpEndpoint = (port = DEFAULT_CDP_PORT) => `http://127.0.0.1:${port}`;
+const CDP_ENDPOINT = cdpEndpoint(DEFAULT_CDP_PORT); // back-compat default
 const CDP_VERSION_URL = `${CDP_ENDPOINT}/json/version`;
+const __dirname_attach = path.dirname(fileURLToPath(import.meta.url));
+
+/** Ask the OS for a free TCP port (used when 9222 is occupied). */
+export function findFreePort() {
+  return new Promise((resolve, reject) => {
+    const srv = net.createServer();
+    srv.on('error', reject);
+    srv.listen(0, '127.0.0.1', () => {
+      const { port } = srv.address();
+      srv.close(() => resolve(port));
+    });
+  });
+}
+
+function defaultDedicatedUserDataDir() {
+  return path.join(__dirname_attach, '.jarvis-edge-profile');
+}
 const DEFAULT_EDGE_PATHS = [
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
   'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
@@ -112,26 +132,30 @@ export function getEdgeExecutablePath() {
   return edgePath;
 }
 
-export function buildEdgeLaunchArgs(profileDirectory) {
-  return [
+export function buildEdgeLaunchArgs(profileDirectory, { port = DEFAULT_CDP_PORT, userDataDir } = {}) {
+  const args = [
     '--remote-debugging-address=127.0.0.1',
-    '--remote-debugging-port=9222',
+    `--remote-debugging-port=${port}`,
     `--profile-directory=${profileDirectory}`,
   ];
+  // A dedicated user-data-dir makes Edge start a SEPARATE instance (not blocked
+  // by an already-running Edge), so its own debugging port can open.
+  if (userDataDir) args.push(`--user-data-dir=${userDataDir}`);
+  return args;
 }
 
-export async function isCdpEndpointAvailable() {
+export async function isCdpEndpointAvailable(port = DEFAULT_CDP_PORT) {
   try {
-    const response = await fetch(CDP_VERSION_URL);
+    const response = await fetch(`${cdpEndpoint(port)}/json/version`);
     return response.ok;
   } catch {
     return false;
   }
 }
 
-export async function waitForCdpEndpoint({ attempts = 20, delayMs = 500 } = {}) {
+export async function waitForCdpEndpoint({ attempts = 20, delayMs = 500, port = DEFAULT_CDP_PORT } = {}) {
   for (let attempt = 0; attempt < attempts; attempt += 1) {
-    if (await isCdpEndpointAvailable()) {
+    if (await isCdpEndpointAvailable(port)) {
       return true;
     }
 
@@ -141,9 +165,9 @@ export async function waitForCdpEndpoint({ attempts = 20, delayMs = 500 } = {}) 
   return false;
 }
 
-export function launchEdgeWithProfile(profileDirectory) {
+export function launchEdgeWithProfile(profileDirectory, opts = {}) {
   const edgePath = getEdgeExecutablePath();
-  const edgeProcess = spawn(edgePath, buildEdgeLaunchArgs(profileDirectory), {
+  const edgeProcess = spawn(edgePath, buildEdgeLaunchArgs(profileDirectory, opts), {
     detached: true,
     stdio: 'ignore',
   });
@@ -236,8 +260,8 @@ export async function selectBrowserAndProfile(input = process.stdin, output = pr
   }
 }
 
-export async function attachToEdge() {
-  const browser = await chromium.connectOverCDP(CDP_ENDPOINT);
+export async function attachToEdge(endpoint = CDP_ENDPOINT) {
+  const browser = await chromium.connectOverCDP(endpoint);
   const contexts = browser.contexts();
   const pages = contexts.flatMap((context) => context.pages());
 
@@ -266,6 +290,61 @@ export function getAttachedBrowserContext(browser) {
   }
 
   return context;
+}
+
+/**
+ * Acquire a CDP-attached browser, healing around a busy port:
+ *   1. REUSE an existing CDP on the preferred port (the signed-in session).
+ *   2. Else LAUNCH the remembered Edge profile on the preferred port.
+ *   3. If that port is busy / Edge is already running, OPEN ANOTHER CDP on its
+ *      own — a separate, Jarvis-owned Edge instance (its own user-data-dir) on a
+ *      free port — so you never have to close your existing Edge.
+ *
+ * The browser/probe/launch/wait/free-port operations are injectable so the
+ * decision ladder can be unit-tested without launching a real browser.
+ *
+ * @returns {{ browser, endpoint, port, mode:'reused'|'launched'|'dedicated' }}
+ */
+export async function acquireEdgeBrowser({
+  profileDirectory,
+  preferredPort = DEFAULT_CDP_PORT,
+  dedicatedUserDataDir,
+  onLog = () => {},
+  probe = isCdpEndpointAvailable,
+  launch = launchEdgeWithProfile,
+  waitFor = waitForCdpEndpoint,
+  attach = attachToEdge,
+  freePort = findFreePort,
+} = {}) {
+  // 1 · REUSE — works even without a remembered profile.
+  if (await probe(preferredPort)) {
+    onLog(`Reusing existing CDP on port ${preferredPort}.`);
+    const { browser } = await attach(cdpEndpoint(preferredPort));
+    return { browser, endpoint: cdpEndpoint(preferredPort), port: preferredPort, mode: 'reused' };
+  }
+
+  if (!profileDirectory) {
+    throw new Error('No Edge profile remembered yet — run setup once, or open Edge with --remote-debugging-port.');
+  }
+
+  // 2 · LAUNCH on the preferred port.
+  onLog(`Launching Edge profile "${profileDirectory}" on port ${preferredPort}…`);
+  launch(profileDirectory, { port: preferredPort });
+  if (await waitFor({ port: preferredPort, attempts: 16, delayMs: 500 })) {
+    const { browser } = await attach(cdpEndpoint(preferredPort));
+    return { browser, endpoint: cdpEndpoint(preferredPort), port: preferredPort, mode: 'launched' };
+  }
+
+  // 3 · BUSY — open another CDP on its own (separate instance + free port).
+  const port = await freePort();
+  const userDataDir = dedicatedUserDataDir || defaultDedicatedUserDataDir();
+  onLog(`Port ${preferredPort} is busy — opening a dedicated Edge CDP on port ${port}.`);
+  launch(profileDirectory, { port, userDataDir });
+  if (!(await waitFor({ port, attempts: 30, delayMs: 600 }))) {
+    throw new Error(`Could not open a CDP endpoint on ${preferredPort} or fallback ${port}.`);
+  }
+  const { browser } = await attach(cdpEndpoint(port));
+  return { browser, endpoint: cdpEndpoint(port), port, mode: 'dedicated' };
 }
 
 export async function runAppSmokeTest(context, targetUrl, { timeout = 30000 } = {}) {

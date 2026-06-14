@@ -3,3 +3,4 @@ jarvis-mdm.config.json
 monitors.json
 channels.json
 reports/gemini-sessions/
+.jarvis-edge-profile/

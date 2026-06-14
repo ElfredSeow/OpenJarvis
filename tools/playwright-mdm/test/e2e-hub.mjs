@@ -71,19 +71,20 @@ function startMockLinkedIn() {
 
 // Drive the LinkedIn composer end-to-end against a mock URL; collect step
 // labels + whether each frame carried an image, plus the final result.
-function runLinkedIn(page, { proj, text, images, mockUrl }) {
-  return page.evaluate(({ proj, text, images, mockUrl }) => new Promise((resolve) => {
+function runLinkedIn(page, { proj, text, images, mockUrl, heal }) {
+  return page.evaluate(({ proj, text, images, mockUrl, heal }) => new Promise((resolve) => {
     const frames = [], labels = []; let done = null, err = null;
     const q = '/api/linkedin/post?project=' + encodeURIComponent(proj)
       + '&text=' + encodeURIComponent(text)
       + '&images=' + encodeURIComponent(JSON.stringify(images))
+      + (heal ? '&heal=' + heal : '')
       + '&url=' + encodeURIComponent(mockUrl) + '&keep=0';
     const es = new EventSource(q);
     es.addEventListener('step', (e) => { try { const s = JSON.parse(e.data); frames.push(!!s.image); if (s.label) labels.push(s.label); } catch {} });
     es.addEventListener('done', (e) => { try { done = JSON.parse(e.data); } catch {} es.close(); resolve({ frames, labels, done, err }); });
     es.addEventListener('error', (e) => { try { err = JSON.parse(e.data); } catch { err = 'error'; } es.close(); resolve({ frames, labels, done, err }); });
     setTimeout(() => { es.close(); resolve({ frames, labels, done, err, timeout: true }); }, 90000);
-  }), { proj, text, images, mockUrl });
+  }), { proj, text, images, mockUrl, heal });
 }
 
 const STATE_FILES = ['jarvis-mdm.config.json', 'channels.json', 'monitors.json'];
@@ -255,6 +256,13 @@ async function main() {
     check('engine reported a self-correction step', heal.labels.some((l) => /self-correct/i.test(l)), heal.labels.filter((l) => /self-correct/i.test(l)).join(' | ') || heal.labels.join(' | '));
     check('post text still landed after healing', heal.done?.typedText?.includes('E2E self-heal post'), (heal.done?.typedText || '').slice(0, 50));
     check('still STOPPED before posting', heal.done?.posted === false);
+
+    // ===================================================================
+    scenario('Self-correction — VISION tier (engine reads a screenshot to recover)');
+    const vis = await runLinkedIn(page, { proj: projName, text: 'E2E vision heal', images: [], mockUrl: mock.url + 'hard', heal: 'vision' });
+    check('composer completed via vision self-correction', vis.done && vis.done.ok, JSON.stringify(vis.err || vis.timeout || ''));
+    check('engine self-corrected using the screenshot (vision)', vis.labels.some((l) => /vision/i.test(l) && /self-correct/i.test(l)), vis.labels.filter((l) => /vision/i.test(l)).join(' | '));
+    check('vision-healed run still STOPPED before posting', vis.done?.posted === false);
 
     // ===================================================================
     scenario('LinkedIn Poster UI — project + photos load in the panel');

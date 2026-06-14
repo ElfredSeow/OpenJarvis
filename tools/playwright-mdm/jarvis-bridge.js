@@ -18,11 +18,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname } from 'node:path';
 
 import {
-  attachToEdge,
+  acquireEdgeBrowser,
   getAttachedBrowserContext,
   isCdpEndpointAvailable,
-  launchEdgeWithProfile,
-  waitForCdpEndpoint,
 } from './attach.js';
 import {
   navigateToGemini,
@@ -43,6 +41,7 @@ const SESSIONS_DIR = pathJoin(__dirname, 'reports', 'gemini-sessions');
 let _browser = null;
 let _context = null;
 let _geminiPage = null;
+let _endpoint = null;
 
 /** Public: the attached, signed-in Edge context (auto-launches the remembered
  * profile if needed). Other modules (e.g. the LinkedIn poster) reuse this so
@@ -55,22 +54,25 @@ async function getContext() {
   // Reuse a live connection if we already have one.
   if (_browser && _browser.isConnected() && _context) return _context;
 
-  // If nothing is listening on the debug port yet, auto-launch the REMEMBERED
-  // Edge profile (set once via `npm run setup`). No prompts, no re-picking.
-  if (!(await isCdpEndpointAvailable())) {
-    const cfg = await requireConfiguredProfile();
-    console.log(`Launching remembered Edge profile: ${cfg.edgeProfile.label}`);
-    launchEdgeWithProfile(cfg.edgeProfile.directory);
-    if (!(await waitForCdpEndpoint())) {
-      throw new Error(
-        'Edge was launched but the debug port never opened. Fully close all Edge\n' +
-          'windows and try again so Edge can relaunch with remote debugging.',
-      );
-    }
+  const cfg = await loadConfig();
+  const preferredPort = cfg.cdpPort || 9222;
+  const profileDirectory = cfg.edgeProfile?.directory;
+
+  // Nothing to reuse and no remembered profile → friendly setup error.
+  if (!profileDirectory && !(await isCdpEndpointAvailable(preferredPort))) {
+    await requireConfiguredProfile();
   }
 
-  const { browser } = await attachToEdge();
+  // Reuse the existing CDP if free; otherwise launch the remembered profile;
+  // and if the preferred port is busy (Edge already running), open ANOTHER CDP
+  // on its own — a dedicated instance on a free port. No need to close Edge.
+  const { browser, endpoint, mode, port } = await acquireEdgeBrowser({
+    profileDirectory, preferredPort, onLog: (m) => console.log(m),
+  });
+  console.log(`CDP ${mode} on port ${port} (${endpoint}).`);
+
   _browser = browser;
+  _endpoint = endpoint;
   _context = getAttachedBrowserContext(browser);
   return _context;
 }
@@ -274,6 +276,7 @@ export async function dispose() {
   _geminiPage = null;
   _context = null;
   _browser = null;
+  _endpoint = null;
 }
 
 // Tiny smoke runner: `node jarvis-bridge.js "your prompt"`
