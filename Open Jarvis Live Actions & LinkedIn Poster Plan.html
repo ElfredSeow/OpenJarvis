@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Jarvis — Live Actions &amp; LinkedIn Poster · Plan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .anchor { scroll-margin-top: 80px; }
+    .win { border-radius: 14px; overflow: hidden; border: 1px solid #1e293b; box-shadow: 0 30px 60px -20px rgba(0,0,0,.7); }
+    .win-bar { background: #0b1220; border-bottom: 1px solid #1e293b; }
+    .dot { width: 11px; height: 11px; border-radius: 9999px; display: inline-block; }
+    .mock { background: #020617; }
+    .navitem { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; font-size:13px; }
+    .navitem.active { background:#0f2a22; color:#6ee7b7; border:1px solid #134e3a; }
+    .navitem.idle { color:#94a3b8; }
+    .tag { font-size:10px; padding:1px 7px; border-radius:9999px; }
+    .ipt { background:#020617; border:1px solid #334155; border-radius:10px; padding:6px 10px; font-size:12px; color:#e2e8f0; }
+    .btn { font-size:12px; border-radius:10px; padding:6px 12px; font-weight:500; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100">
+
+  <header class="sticky top-0 z-20 backdrop-blur bg-slate-950/80 border-b border-slate-800">
+    <nav class="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+      <span class="font-bold text-white mr-2">Live Actions · Plan</span>
+      <a href="#vision" class="text-slate-300 hover:text-emerald-300">Vision</a>
+      <a href="#arch" class="text-slate-300 hover:text-emerald-300">Architecture</a>
+      <a href="#linkedin" class="text-slate-300 hover:text-emerald-300">LinkedIn Poster</a>
+      <a href="#live" class="text-slate-300 hover:text-emerald-300">Live Screen</a>
+      <a href="#heal" class="text-slate-300 hover:text-emerald-300">Self-correct</a>
+      <a href="#canvas" class="text-slate-300 hover:text-emerald-300">HTML Canvas</a>
+      <a href="#protocol" class="text-slate-300 hover:text-emerald-300">Protocol</a>
+      <a href="#safety" class="text-slate-300 hover:text-emerald-300">Safety</a>
+      <a href="#test" class="text-slate-300 hover:text-emerald-300">Tests</a>
+      <a href="#files" class="text-slate-300 hover:text-emerald-300">Files</a>
+    </nav>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-12 space-y-16">
+
+    <!-- HERO -->
+    <section class="space-y-4">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="tag bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">PLAN — approve before build</span>
+        <span class="tag bg-sky-500/10 text-sky-300 border border-sky-500/30">Signed-in Edge</span>
+        <span class="tag bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/30">You click Post</span>
+        <span class="tag bg-amber-500/10 text-amber-300 border border-amber-500/30">Live screen</span>
+      </div>
+      <h1 class="text-4xl font-bold">Watch Jarvis work — and let it draft your LinkedIn post</h1>
+      <p class="text-slate-300 max-w-3xl">
+        Three upgrades to the Hub, all in service of one feeling: <span class="text-white font-semibold">you can see what Jarvis is doing, and you stay in control of the final click.</span>
+        Jarvis takes the marketing plan it already wrote, opens LinkedIn in <span class="text-white">your own signed-in Edge</span>, types the post, attaches your photo references —
+        and <span class="text-white font-semibold">stops at the Post button so you press it yourself.</span> While it works, a <span class="text-white">live screen</span> streams into the Hub so you watch every step.
+        And every HTML deliverable it makes (landing pages, storyboards) now opens <span class="text-white">inside the app on a canvas</span>, not a stray browser tab.
+      </p>
+      <div class="text-xs text-amber-300/80 bg-amber-500/5 border border-amber-700/40 rounded-xl p-3 max-w-3xl">
+        Nothing here is built yet — this is the proposal for your approval. The current Hub (Ask, Marketing, Research, Browser Agent, Monitors, Digest, Channels, Settings) stays exactly as-is;
+        this plan <span class="text-white">adds</span> a LinkedIn Poster module, a reusable live-screen view, and an in-app HTML canvas.
+      </div>
+    </section>
+
+    <!-- VISION -->
+    <section id="vision" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">1 · What you asked for</h2>
+      <div class="grid md:grid-cols-3 gap-5">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <div class="text-2xl mb-1">🔗</div>
+          <h3 class="font-semibold text-sky-300 mb-1.5">Draft the post for me</h3>
+          <p class="text-sm text-slate-400">Use the marketing plan → go to LinkedIn → write the post → upload the photo references. Do <span class="text-white">every step</span> except the final Post — I press that.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <div class="text-2xl mb-1">👁️</div>
+          <h3 class="font-semibold text-emerald-300 mb-1.5">Let me see the screen</h3>
+          <p class="text-sm text-slate-400">As Jarvis clicks through, show a <span class="text-white">live view inside the Hub</span> of what the browser is doing — step by step.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <div class="text-2xl mb-1">🖼️</div>
+          <h3 class="font-semibold text-fuchsia-300 mb-1.5">Show HTML in-app</h3>
+          <p class="text-sm text-slate-400">Any HTML it creates should be <span class="text-white">viewable on a canvas page</span> inside the app, not only as a downloaded file.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="arch" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">2 · Architecture</h2>
+      <p class="text-slate-400 max-w-3xl text-sm">The LinkedIn Poster reuses the <span class="text-white">already-attached Edge session</span> (the same CDP connection Jarvis uses for Gemini) so you are <span class="text-white">already logged into LinkedIn</span> — no passwords, no second browser. As it acts, it captures a JPEG of the page after each step and streams it to the Hub over Server-Sent Events (SSE). The browser window is also visible on your desktop; the in-app live view mirrors it.</p>
+      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+        <pre class="text-[11px] sm:text-xs text-slate-300 overflow-x-auto whitespace-pre"><code>            ┌───────────────────────────── JARVIS HUB (localhost:4100) ─────────────────────────────┐
+            │  Sidebar +  🔗 LinkedIn Poster   🤖 Browser Agent (now w/ live view)   📣 Marketing   │
+            │                                                                                        │
+            │   ┌── LinkedIn Poster panel ──────────────┐   ┌── Live Screen (SSE) ───────────────┐  │
+            │   │ project ▸ text (from plan) ▸ images   │──▶│  [ JPEG frame, updates each step ] │  │
+            │   │ [ ▶ Draft on LinkedIn ]               │   │  • Opening LinkedIn…               │  │
+            │   └───────────────────────────────────────┘   │  • Writing the post…  • Images ✓   │  │
+            │                    │ GET /api/linkedin/post (SSE: step{label,image} → done)         │  │
+            └────────────────────┼───────────────────────────────────────────────────────────────┘
+                                 ▼
+                       linkedin.js  ──uses──▶  jarvis-bridge.getEdgeContext()  ──CDP:9222──▶  YOUR Edge
+                          │  newPage() in your signed-in context (LinkedIn already authed)
+                          │  click "Start a post" ▸ insertText(plan) ▸ setInputFiles(photos)
+                          │  screenshot() after every step  ─────────────────▶ stream frames to Hub
+                          └─ FIND the Post button … but DO NOT click. Leave tab open for you.</code></pre>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-emerald-300 mb-1.5">Why screenshots, not video</h3>
+          <p class="text-sm text-slate-400">A per-step JPEG streamed over SSE is robust, dependency-free, and works through the same CDP attach we already use. It's the difference between "watch it click" and a brittle video codec pipeline. Frames are ~30–60&nbsp;KB at quality&nbsp;50; one per action plus key waits.</p>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-sky-300 mb-1.5">Same engine, two new consumers</h3>
+          <p class="text-sm text-slate-400">We add one tiny export — <code>getEdgeContext()</code> — to the bridge. The LinkedIn Poster and an upgraded Browser Agent both use it + the same <span class="text-white">live-view component</span>, so "see what it's doing" is consistent everywhere.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LINKEDIN -->
+    <section id="linkedin" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">3 · LinkedIn Poster — mockup</h2>
+      <div class="win">
+        <div class="win-bar px-4 py-2 flex items-center gap-2">
+          <span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span>
+          <span class="text-xs text-slate-400 ml-3">Open Jarvis Hub — LinkedIn Poster</span>
+        </div>
+        <div class="mock p-0 flex" style="min-height:430px">
+          <!-- sidebar -->
+          <div class="w-52 border-r border-slate-800 p-3 space-y-1 bg-[#040813]">
+            <div class="px-2 py-2 text-white font-bold text-sm">⚡ Jarvis Hub</div>
+            <div class="navitem idle">🏠 <span>Dashboard</span></div>
+            <div class="navitem idle">📣 <span>Marketing Studio</span></div>
+            <div class="navitem idle">🤖 <span>Browser Agent</span></div>
+            <div class="navitem active">🔗 <span>LinkedIn Poster</span></div>
+            <div class="navitem idle">⏰ <span>Monitors</span></div>
+            <div class="navitem idle">⚙️ <span>Settings</span></div>
+          </div>
+          <!-- content -->
+          <div class="flex-1 p-6 grid grid-cols-2 gap-5">
+            <div class="space-y-3">
+              <div>
+                <div class="text-xl font-bold">LinkedIn Poster</div>
+                <div class="text-xs text-slate-400">Jarvis writes the post &amp; attaches your photos in your signed-in Edge, then stops so <span class="text-emerald-300">you click Post</span>.</div>
+              </div>
+              <select class="ipt w-full"><option>Project: LinkedIN</option></select>
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span>Post text</span><button class="btn bg-slate-700 text-white">⤓ Load from plan</button>
+              </div>
+              <textarea class="ipt w-full" rows="5">Shipping Open Jarvis: a local-first marketing co-pilot that turns your repo into LinkedIn + TikTok content — no API keys, runs on your Gemini license. Here's what we learned… #buildinpublic</textarea>
+              <div class="text-xs text-slate-400">Photo references</div>
+              <div class="grid grid-cols-3 gap-2">
+                <label class="ipt flex items-center gap-1 text-[11px]"><input type="checkbox" checked> hero.png</label>
+                <label class="ipt flex items-center gap-1 text-[11px]"><input type="checkbox" checked> chart.png</label>
+                <label class="ipt flex items-center gap-1 text-[11px]"><input type="checkbox"> logo.svg</label>
+              </div>
+              <button class="btn bg-emerald-600 text-white w-full">▶ Draft on LinkedIn (you press Post)</button>
+            </div>
+            <!-- live view -->
+            <div class="space-y-2">
+              <div class="text-xs text-slate-400 flex items-center gap-2"><span class="dot" style="background:#22c55e"></span> Live screen</div>
+              <div class="rounded-lg border border-slate-700 bg-black/60 h-44 flex items-center justify-center text-center text-[11px] text-slate-500">
+                [ live JPEG of LinkedIn composer<br>updating after each step ]
+              </div>
+              <pre class="text-[11px] bg-black/50 border border-slate-800 rounded-lg p-2 h-28 overflow-y-auto whitespace-pre-wrap text-emerald-200">• Opening LinkedIn…
+• Composer open
+• Writing the post…
+• Attaching 2 image(s)…
+• Images attached
+✓ Ready — review and click Post yourself</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800"><h3 class="font-semibold text-sky-300 mb-1.5">Text from the plan</h3><p class="text-sm text-slate-400">"Load from plan" pulls <code>marketing/linkedin/ideas/ideas.md</code> from the selected project into the editor. Edit freely before drafting.</p></div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800"><h3 class="font-semibold text-emerald-300 mb-1.5">Photos from the project</h3><p class="text-sm text-slate-400">Images are discovered from the project's folders (png/jpg/webp/gif/svg). Tick the ones to attach; Jarvis uploads them into the composer.</p></div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800"><h3 class="font-semibold text-fuchsia-300 mb-1.5">Stops before Post</h3><p class="text-sm text-slate-400">Jarvis locates the Post button, screenshots the ready state, and leaves the tab open. The submit click is <span class="text-white">always yours</span>.</p></div>
+      </div>
+    </section>
+
+    <!-- LIVE SCREEN -->
+    <section id="live" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">4 · Live screen view (reusable)</h2>
+      <p class="text-slate-400 max-w-3xl text-sm">A single client component — <code>liveRun(streamUrl, {imgEl, logEl})</code> — opens an SSE connection, swaps the <code>&lt;img&gt;</code> on each <code>step</code> frame, and appends the step label to a log. The <span class="text-white">Browser Agent</span> gets the same treatment: you'll watch it navigate, click and extract instead of waiting for a wall of text.</p>
+      <div class="win">
+        <div class="win-bar px-4 py-2 flex items-center gap-2">
+          <span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span>
+          <span class="text-xs text-slate-400 ml-3">Browser Agent — now with live view</span>
+        </div>
+        <div class="mock p-6 grid grid-cols-2 gap-5" style="min-height:260px">
+          <div class="space-y-2">
+            <div class="text-xl font-bold">Browser Agent</div>
+            <div class="text-xs text-slate-400">Describe a task; Gemini plans, Playwright runs it — and you watch.</div>
+            <textarea class="ipt w-full" rows="3">open example.com and extract the headline</textarea>
+            <button class="btn bg-emerald-600 text-white">▶ Run with live view</button>
+          </div>
+          <div class="space-y-2">
+            <div class="rounded-lg border border-slate-700 bg-black/60 h-32 flex items-center justify-center text-[11px] text-slate-500">[ live frame of the agent's browser ]</div>
+            <pre class="text-[11px] bg-black/50 border border-slate-800 rounded-lg p-2 h-20 overflow-y-auto whitespace-pre-wrap text-emerald-200">• Planning with Gemini…
+• Step 1: navigate → example.com
+• Step 2: extract → "Example Domain"
+✓ Done</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELF-CORRECT -->
+    <section id="heal" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">4b · Self-correction (sees the screen, fixes itself)</h2>
+      <p class="text-slate-400 max-w-3xl text-sm">LinkedIn renames classes and reshuffles its DOM all the time, so a fixed selector eventually misses. Instead of failing, the engine <span class="text-white">captures the DOM and a screenshot and corrects itself</span> through three tiers — each successful recovery shows up live as "🔧 Self-corrected …".</p>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800"><div class="tag bg-slate-700 text-slate-200 mb-2 inline-block">tier 1</div><h3 class="font-semibold text-sky-300 mb-1.5">Static selectors</h3><p class="text-sm text-slate-400">Try the known LinkedIn selectors first — fast, zero cost. Works on a normal day.</p></div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800"><div class="tag bg-slate-700 text-slate-200 mb-2 inline-block">tier 2</div><h3 class="font-semibold text-emerald-300 mb-1.5">DOM snapshot</h3><p class="text-sm text-slate-400">If they miss, enumerate every visible interactive element and pick the best match for the intent by text / aria / placeholder. No LLM, instant.</p></div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800"><div class="tag bg-slate-700 text-slate-200 mb-2 inline-block">tier 3</div><h3 class="font-semibold text-fuchsia-300 mb-1.5">Gemini vision</h3><p class="text-sm text-slate-400">Still stuck? Send Gemini the <span class="text-white">screenshot</span> + the element list and ask it to point at the right one. The engine literally sees the screen and decides.</p></div>
+      </div>
+      <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+        <pre class="text-[11px] text-slate-300 overflow-x-auto whitespace-pre"><code>need "Start a post"  ─▶  tier1 static  ✗ miss
+                          ─▶  tier2 DOM    ▸ snapshot elements ▸ match text="Start a post"  ✓  🔧 self-corrected (DOM)
+                          ─▶  tier3 vision ▸ screenshot + list ▸ Gemini: "#3"               ✓  🔧 self-corrected (vision)</code></pre>
+      </div>
+    </section>
+
+    <!-- CANVAS -->
+    <section id="canvas" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">5 · In-app HTML canvas</h2>
+      <p class="text-slate-400 max-w-3xl text-sm">In Marketing Studio, preview-able outputs (landing page, storyboard scene) currently open in a new browser tab. This plan renders them <span class="text-white">inside the Hub</span> in a sandboxed <code>&lt;iframe&gt;</code> canvas, with "Open in tab" and "Close" controls. The HTML is served from the existing safe <code>/files/</code> route — no new exposure.</p>
+      <div class="win">
+        <div class="win-bar px-4 py-2 flex items-center gap-2">
+          <span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span>
+          <span class="text-xs text-slate-400 ml-3">Marketing Studio — Canvas preview</span>
+        </div>
+        <div class="mock p-6 space-y-3" style="min-height:300px">
+          <div class="text-sm text-slate-300">Outputs</div>
+          <div class="flex flex-wrap gap-2 text-xs">
+            <span class="px-2.5 py-1.5 rounded-lg border border-emerald-600 text-emerald-300">🔎 Landing page</span>
+            <span class="px-2.5 py-1.5 rounded-lg border border-emerald-600 text-emerald-300">🔎 Storyboard scene</span>
+            <span class="px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300">📄 Project summary</span>
+          </div>
+          <div class="rounded-xl border border-slate-700 overflow-hidden">
+            <div class="bg-[#0b1220] border-b border-slate-800 px-3 py-1.5 flex items-center justify-between">
+              <span class="text-xs text-slate-300">🖼️ Canvas — landing-page/html/index.html</span>
+              <span class="flex gap-2"><span class="btn bg-slate-700 text-white">Open in tab</span><span class="btn bg-rose-600/80 text-white">Close</span></span>
+            </div>
+            <div class="bg-white h-40 flex items-center justify-center text-slate-400 text-sm">[ rendered landing page HTML, live in an iframe ]</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROTOCOL -->
+    <section id="protocol" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">6 · New endpoints &amp; event protocol</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-slate-800 rounded-xl overflow-hidden">
+          <thead class="bg-slate-900 text-slate-300"><tr><th class="text-left p-3">Endpoint</th><th class="text-left p-3">Method</th><th class="text-left p-3">Purpose</th></tr></thead>
+          <tbody class="text-slate-400">
+            <tr class="border-t border-slate-800"><td class="p-3"><code>/api/linkedin/post</code></td><td class="p-3">GET (SSE)</td><td class="p-3">Stream the compose-on-LinkedIn run: <code>step{label,image}</code> frames → <code>done{ready,postButtonFound,imageCount,typedText}</code>.</td></tr>
+            <tr class="border-t border-slate-800"><td class="p-3"><code>/api/project-images</code></td><td class="p-3">GET</td><td class="p-3">List image files in a project to offer as photo references.</td></tr>
+            <tr class="border-t border-slate-800"><td class="p-3"><code>/api/agent/stream</code></td><td class="p-3">GET (SSE)</td><td class="p-3">Browser Agent with live frames (plan → per-step screenshots → done).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+        <div class="text-xs text-slate-400 mb-2">SSE event shape (one per step)</div>
+        <pre class="text-[11px] text-slate-300 overflow-x-auto"><code>event: step
+data: {"label":"Writing the post…","image":"&lt;base64 jpeg&gt;"}
+
+event: done
+data: {"ok":true,"ready":true,"posted":false,"postButtonFound":true,"imageCount":2,"typedText":"Shipping Open Jarvis…"}</code></pre>
+      </div>
+    </section>
+
+    <!-- SAFETY -->
+    <section id="safety" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">7 · Safety &amp; control</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-emerald-700/40"><h3 class="font-semibold text-emerald-300 mb-1.5">You press Post — always</h3><p class="text-sm text-slate-400">The composer code has <span class="text-white">no path</span> that clicks Post. It finds the button, screenshots the ready state, and stops. The tab stays open in your Edge for you to review and submit.</p></div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800"><h3 class="font-semibold text-sky-300 mb-1.5">Your session, your machine</h3><p class="text-sm text-slate-400">Runs in your existing signed-in Edge profile over the local CDP port. No LinkedIn password is entered or stored; nothing leaves your machine except the LinkedIn page you'd visit anyway.</p></div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800"><h3 class="font-semibold text-fuchsia-300 mb-1.5">Images stay in-project</h3><p class="text-sm text-slate-400">Only files resolved inside the selected project folder can be attached (path-escape guarded), so the picker can't be tricked into uploading arbitrary files.</p></div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800"><h3 class="font-semibold text-amber-300 mb-1.5">Sandboxed canvas</h3><p class="text-sm text-slate-400">The HTML canvas is a sandboxed iframe served from the same guarded <code>/files/</code> route used today — no new file exposure.</p></div>
+      </div>
+    </section>
+
+    <!-- TESTS -->
+    <section id="test" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">8 · How it gets e2e-tested</h2>
+      <p class="text-slate-400 max-w-3xl text-sm">We won't gamble on LinkedIn's live DOM (or risk your real account) in tests. The suite spins up a <span class="text-white">local mock LinkedIn composer</span> (same selectors: "Start a post", <code>.ql-editor</code>, file input, <code>.share-actions__primary-action</code>) and drives the <span class="text-white">real composer code</span> against it via the live Edge attach.</p>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-emerald-300 mb-2">Asserted automatically</h3>
+          <ul class="text-sm text-slate-400 space-y-1 list-disc pl-5">
+            <li>Composer opens; the plan text lands in the editor (<code>typedText</code> matches)</li>
+            <li>Selected image is attached (<code>imageCount ≥ 1</code>)</li>
+            <li>Post button is found but <span class="text-white">posted = false</span> (never clicked)</li>
+            <li>≥ 1 live screenshot frame streamed during the run</li>
+            <li>Project image listing returns the reference photo</li>
+            <li>HTML canvas iframe loads the generated page in-app</li>
+            <li>Agent stream emits per-step frames; Hub stays healthy</li>
+          </ul>
+        </div>
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+          <h3 class="font-semibold text-sky-300 mb-2">Real LinkedIn readiness</h3>
+          <p class="text-sm text-slate-400">The same code carries multiple resilient selector fallbacks for LinkedIn's actual composer (Start-a-post trigger, contenteditable editor, hidden file input, Photo button, Post button). Because it stops before Post, you can safely do a real dry run against linkedin.com yourself — it fills, you decide.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FILES -->
+    <section id="files" class="anchor space-y-5">
+      <h2 class="text-2xl font-semibold">9 · Files touched</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-slate-800 rounded-xl overflow-hidden">
+          <thead class="bg-slate-900 text-slate-300"><tr><th class="text-left p-3">File</th><th class="text-left p-3">Change</th></tr></thead>
+          <tbody class="text-slate-400">
+            <tr class="border-t border-slate-800"><td class="p-3"><code>linkedin.js</code> <span class="tag bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">new</span></td><td class="p-3">Composer: open LinkedIn, write text, upload photos, stop before Post, screenshot each step.</td></tr>
+            <tr class="border-t border-slate-800"><td class="p-3"><code>jarvis-bridge.js</code></td><td class="p-3">Export <code>getEdgeContext()</code>; add <code>actStream()</code> (agent run with per-step screenshots).</td></tr>
+            <tr class="border-t border-slate-800"><td class="p-3"><code>playwright-agent.js</code></td><td class="p-3">Export <code>agentScreenshot()</code> for the live view.</td></tr>
+            <tr class="border-t border-slate-800"><td class="p-3"><code>jarvis.js</code></td><td class="p-3">Add <code>listProjectImages()</code>.</td></tr>
+            <tr class="border-t border-slate-800"><td class="p-3"><code>jarvis-ui.js</code></td><td class="p-3">3 endpoints + LinkedIn Poster module + <code>liveRun()</code> live view + HTML canvas in Marketing + wire Agent to live view.</td></tr>
+            <tr class="border-t border-slate-800"><td class="p-3"><code>test/e2e-hub.mjs</code></td><td class="p-3">Mock LinkedIn server + new scenarios (poster, canvas, live view, image listing).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="text-xs text-slate-500">Unchanged: every existing module, the Gemini bridge behavior, your config/channels/monitors. Backwards compatible — the old <code>/api/agent</code> stays for non-streaming callers.</div>
+    </section>
+
+    <section class="border-t border-slate-800 pt-8">
+      <div class="bg-emerald-500/5 border border-emerald-700/40 rounded-2xl p-5">
+        <h3 class="font-semibold text-emerald-300 mb-1">Approve to build</h3>
+        <p class="text-sm text-slate-400">Say the word and I'll implement exactly this, then run the extended e2e suite (live Edge + mock LinkedIn) until green and report results. If you want anything changed — a standalone "Canvas" sidebar item, scheduling LinkedIn drafts, or supporting X/Threads with the same engine — tell me before I start.</p>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

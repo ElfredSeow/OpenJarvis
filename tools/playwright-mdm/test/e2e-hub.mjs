@@ -16,16 +16,75 @@
 
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { readFile, writeFile, mkdir, rm, cp } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+const PROJECTS = join(ROOT, '..', '..', 'workspace', 'projects');
 const PORT = Number(process.env.E2E_PORT) || 4199;
 const BASE = `http://localhost:${PORT}`;
 const SHOTS = join(ROOT, 'reports', 'e2e');
+
+// 1x1 transparent PNG used as a project "photo reference" in the LinkedIn test.
+const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+
+// A local stand-in for LinkedIn's composer — same selectors the real composer
+// targets — so we can drive the REAL composer code without touching a real account.
+const MOCK_LINKEDIN = `<!doctype html><html><head><meta charset="utf-8"><title>Mock LinkedIn</title></head>
+<body style="font-family:sans-serif;padding:24px;background:#f3f2ef">
+<h2>Mock LinkedIn Feed</h2>
+<button class="share-box-feed-entry__trigger" onclick="document.getElementById('composer').style.display='block'">Start a post</button>
+<div id="composer" style="display:none;margin-top:16px;border:1px solid #ccc;padding:16px;background:#fff;max-width:520px">
+  <div class="ql-editor" contenteditable="true" data-placeholder="What do you want to talk about?" style="min-height:90px;border:1px solid #ddd;padding:8px"></div>
+  <input type="file" multiple style="margin-top:8px">
+  <div style="margin-top:12px;text-align:right">
+    <button class="share-actions__primary-action" onclick="window.__posted=true;this.textContent='Posted!'">Post</button>
+  </div>
+</div></body></html>`;
+
+// "Hard" variant: the trigger is a <div role=button> with NO matching class/aria,
+// so every static selector misses — forcing the engine to self-correct via the
+// DOM heuristic before it can open the composer.
+const MOCK_LINKEDIN_HARD = `<!doctype html><html><head><meta charset="utf-8"><title>Mock LinkedIn (hard)</title></head>
+<body style="font-family:sans-serif;padding:24px;background:#f3f2ef">
+<h2>Mock LinkedIn Feed (hard)</h2>
+<div role="button" style="cursor:pointer;border:1px solid #999;padding:8px;display:inline-block" onclick="document.getElementById('composer').style.display='block'">Start a post</div>
+<div id="composer" style="display:none;margin-top:16px;border:1px solid #ccc;padding:16px;background:#fff;max-width:520px">
+  <div class="ql-editor" contenteditable="true" data-placeholder="What do you want to talk about?" style="min-height:90px;border:1px solid #ddd;padding:8px"></div>
+  <input type="file" multiple style="margin-top:8px">
+  <div style="margin-top:12px;text-align:right">
+    <button class="share-actions__primary-action" onclick="window.__posted=true;this.textContent='Posted!'">Post</button>
+  </div>
+</div></body></html>`;
+
+function startMockLinkedIn() {
+  const srv = createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(req.url.startsWith('/hard') ? MOCK_LINKEDIN_HARD : MOCK_LINKEDIN);
+  });
+  return new Promise((resolve) => { srv.listen(0, '127.0.0.1', () => resolve({ srv, url: `http://127.0.0.1:${srv.address().port}/` })); });
+}
+
+// Drive the LinkedIn composer end-to-end against a mock URL; collect step
+// labels + whether each frame carried an image, plus the final result.
+function runLinkedIn(page, { proj, text, images, mockUrl }) {
+  return page.evaluate(({ proj, text, images, mockUrl }) => new Promise((resolve) => {
+    const frames = [], labels = []; let done = null, err = null;
+    const q = '/api/linkedin/post?project=' + encodeURIComponent(proj)
+      + '&text=' + encodeURIComponent(text)
+      + '&images=' + encodeURIComponent(JSON.stringify(images))
+      + '&url=' + encodeURIComponent(mockUrl) + '&keep=0';
+    const es = new EventSource(q);
+    es.addEventListener('step', (e) => { try { const s = JSON.parse(e.data); frames.push(!!s.image); if (s.label) labels.push(s.label); } catch {} });
+    es.addEventListener('done', (e) => { try { done = JSON.parse(e.data); } catch {} es.close(); resolve({ frames, labels, done, err }); });
+    es.addEventListener('error', (e) => { try { err = JSON.parse(e.data); } catch { err = 'error'; } es.close(); resolve({ frames, labels, done, err }); });
+    setTimeout(() => { es.close(); resolve({ frames, labels, done, err, timeout: true }); }, 90000);
+  }), { proj, text, images, mockUrl });
+}
 
 const STATE_FILES = ['jarvis-mdm.config.json', 'channels.json', 'monitors.json'];
 
@@ -86,11 +145,12 @@ async function main() {
   await mkdir(SHOTS, { recursive: true });
   const bak = await snapshot();
   const server = startServer();
-  let browser;
+  let browser, mock;
   const pageErrors = [];
 
   try {
     await waitForServer();
+    mock = await startMockLinkedIn();
     browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     page.on('pageerror', (e) => { pageErrors.push(e.message); log(`   ‼ pageerror: ${e.message}`); });
@@ -101,15 +161,15 @@ async function main() {
     await page.goto(BASE, { waitUntil: 'networkidle' });
     await page.waitForSelector('#nav button');
     const navCount = await page.$$eval('#nav button', (b) => b.length);
-    check('sidebar lists all 9 modules', navCount === 9, `found ${navCount}`);
+    check('sidebar lists all 11 modules', navCount === 11, `found ${navCount}`);
     check('header shows Jarvis Hub', (await page.textContent('aside')).includes('Jarvis Hub'));
     // dashboard cards
     await page.waitForSelector('#view h1');
     check('dashboard heading renders', (await page.textContent('#view h1')).includes('Welcome'));
     const cardCount = await page.$$eval('#view button', (b) => b.length);
-    check('dashboard shows 8 module cards', cardCount === 8, `found ${cardCount}`);
+    check('dashboard shows 10 module cards', cardCount === 10, `found ${cardCount}`);
     // click each nav item and confirm the view changes
-    const modules = ['ask', 'marketing', 'research', 'agent', 'monitors', 'digest', 'channels', 'settings', 'home'];
+    const modules = ['ask', 'marketing', 'linkedin', 'canvas', 'research', 'agent', 'monitors', 'digest', 'channels', 'settings', 'home'];
     let navOk = true;
     for (const id of modules) {
       await goTo(page, id);
@@ -163,6 +223,60 @@ async function main() {
       });
     }, projName);
     check('empty-source pipeline returns a clear error (no crash)', runEmpty.err && /No readable source/i.test(runEmpty.err), JSON.stringify(runEmpty));
+
+    // Seed the project with a photo reference + a generated HTML deliverable so
+    // the LinkedIn Poster and Canvas have something real to work with.
+    const projRoot = join(PROJECTS, projName);
+    await mkdir(join(projRoot, 'source', 'raw-html'), { recursive: true });
+    await writeFile(join(projRoot, 'source', 'raw-html', 'ref.png'), PNG_1PX);
+    await mkdir(join(projRoot, 'landing-page', 'html'), { recursive: true });
+    await writeFile(join(projRoot, 'landing-page', 'html', 'index.html'),
+      '<!doctype html><html><head><meta charset="utf-8"></head><body><h1 id="lp">E2E Landing Page</h1></body></html>', 'utf8');
+
+    // ===================================================================
+    scenario('Project images — discovered for photo references');
+    const imgs = await page.evaluate(async (n) => (await (await fetch('/api/project-images?project=' + encodeURIComponent(n))).json()), projName);
+    check('project image listing finds the reference photo', imgs.images?.some((p) => p.endsWith('ref.png')), JSON.stringify(imgs.images));
+
+    // ===================================================================
+    scenario('LinkedIn Poster — drafts post + photo, STOPS before Post (live stream)');
+    const ll = await runLinkedIn(page, { proj: projName, text: 'E2E hello from the marketing plan', images: ['source/raw-html/ref.png'], mockUrl: mock.url });
+    check('composer completed without crashing', ll.done && ll.done.ok, JSON.stringify(ll.err || ll.timeout || ''));
+    check('post text was typed into the composer', ll.done?.typedText?.includes('E2E hello from the marketing plan'), (ll.done?.typedText || '').slice(0, 60));
+    check('photo reference was attached', (ll.done?.imageCount ?? 0) >= 1, `imageCount=${ll.done?.imageCount}`);
+    check('Post button was found', ll.done?.postButtonFound === true);
+    check('it STOPPED before posting (posted=false)', ll.done?.posted === false);
+    check('live screen streamed at least one frame', ll.frames.filter(Boolean).length >= 1, `${ll.frames.filter(Boolean).length} frames`);
+
+    // ===================================================================
+    scenario('Self-correction — engine recovers when selectors miss (DOM tier)');
+    const heal = await runLinkedIn(page, { proj: projName, text: 'E2E self-heal post', images: [], mockUrl: mock.url + 'hard' });
+    check('composer still completed despite broken selectors', heal.done && heal.done.ok, JSON.stringify(heal.err || heal.timeout || ''));
+    check('engine reported a self-correction step', heal.labels.some((l) => /self-correct/i.test(l)), heal.labels.filter((l) => /self-correct/i.test(l)).join(' | ') || heal.labels.join(' | '));
+    check('post text still landed after healing', heal.done?.typedText?.includes('E2E self-heal post'), (heal.done?.typedText || '').slice(0, 50));
+    check('still STOPPED before posting', heal.done?.posted === false);
+
+    // ===================================================================
+    scenario('LinkedIn Poster UI — project + photos load in the panel');
+    await goTo(page, 'linkedin');
+    await page.waitForSelector('#llProj');
+    await page.selectOption('#llProj', projName);
+    await page.waitForFunction(() => document.querySelectorAll('#llImgs input[type=checkbox]').length > 0, { timeout: 5000 }).catch(() => {});
+    check('photo checkboxes render in the LinkedIn panel', (await page.$$eval('#llImgs input[type=checkbox]', (c) => c.length)) > 0);
+
+    // ===================================================================
+    scenario('Canvas — renders generated HTML inside the app');
+    await goTo(page, 'canvas');
+    await page.waitForSelector('#cvProj');
+    await page.selectOption('#cvProj', projName);
+    await page.waitForFunction(() => [...document.querySelectorAll('#cvOutputs button')].some((b) => /Landing page/i.test(b.textContent)), { timeout: 6000 }).catch(() => {});
+    const lpBtn = await page.$$('#cvOutputs button');
+    let clicked = false;
+    for (const b of lpBtn) { if (/Landing page/i.test(await b.textContent())) { await b.click(); clicked = true; break; } }
+    check('landing-page output is listed in Canvas', clicked);
+    await page.waitForSelector('#cvWrap:not(.hidden)', { timeout: 5000 }).catch(() => {});
+    const frameSrc = await page.$eval('#cvFrame', (f) => f.getAttribute('src')).catch(() => '');
+    check('canvas iframe loads the HTML in-app', /index\.html/.test(frameSrc), frameSrc);
 
     // ===================================================================
     scenario('Monitors — full CRUD lifecycle (offline)');
@@ -270,12 +384,16 @@ async function main() {
       body: JSON.stringify({ url: 'https://example.com', objective: 'What is this page about?' }),
     })).json()));
     check('Deep Research responds healthily, never crashes', research && typeof research.text === 'string' && research.text.length > 0, mode(research.text) + ': ' + (research.text || '').slice(0, 70));
-    // Agent
-    const agent = await page.evaluate(async () => (await (await fetch('/api/agent', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ objective: 'open example.com and read the headline' }),
-    })).json()));
-    check('Browser Agent responds healthily, never crashes', agent && typeof agent.plan === 'string' && agent.plan.length > 0 && Array.isArray(agent.results), mode(agent.plan) + `, ${agent.results?.length ?? 0} command(s) executed: ` + (agent.plan || '').slice(0, 50));
+    // Agent — via the live-view stream (collect frames + final result)
+    const agent = await page.evaluate(() => new Promise((resolve) => {
+      const frames = []; let done = null, err = null;
+      const es = new EventSource('/api/agent/stream?objective=' + encodeURIComponent('open example.com and read the headline'));
+      es.addEventListener('step', (e) => { try { frames.push(!!JSON.parse(e.data).image); } catch {} });
+      es.addEventListener('done', (e) => { try { done = JSON.parse(e.data); } catch {} es.close(); resolve({ frames, done, err }); });
+      es.addEventListener('error', (e) => { try { err = JSON.parse(e.data); } catch { err = 'error'; } es.close(); resolve({ frames, done, err }); });
+      setTimeout(() => { es.close(); resolve({ frames, done, err, timeout: true }); }, 90000);
+    }));
+    check('Browser Agent live stream responds healthily, never crashes', agent.done && Array.isArray(agent.done.results), `${agent.frames.filter(Boolean).length} live frame(s), ${agent.done?.results?.length ?? 0} command(s)`);
     // server still alive after all that
     const aliveR = await fetch(`${BASE}/api/state`);
     check('server still healthy after LLM calls', aliveR.ok);
@@ -287,6 +405,7 @@ async function main() {
     await page.screenshot({ path: join(SHOTS, 'hub-final.png'), fullPage: true });
   } finally {
     if (browser) await browser.close().catch(() => {});
+    if (mock) mock.srv.close();
     server.kill();
     await restore(bak);
   }

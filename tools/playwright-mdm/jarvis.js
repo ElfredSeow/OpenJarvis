@@ -63,6 +63,33 @@ export async function listProjects() {
   return (await readdir(PROJECTS, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
 }
 
+const IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg']);
+
+/** List image files anywhere in a project (project-relative POSIX paths), for
+ * offering as LinkedIn photo references. */
+export async function listProjectImages(name, { max = 200 } = {}) {
+  const root = projectDir(name);
+  if (!existsSync(root)) return [];
+  const found = [];
+  async function walk(dir, depth = 0) {
+    if (depth > 6 || found.length >= max) return;
+    let entries = [];
+    try { entries = await readdir(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (found.length >= max) break;
+      const full = join(dir, e.name);
+      if (e.isDirectory()) {
+        if (['node_modules', '.git', 'approvals'].includes(e.name)) continue;
+        await walk(full, depth + 1);
+      } else if (IMAGE_EXT.has(extname(e.name).toLowerCase())) {
+        found.push(relative(root, full).replace(/\\/g, '/'));
+      }
+    }
+  }
+  await walk(root);
+  return found.sort();
+}
+
 export async function collectSourceText(root, { maxFiles = 40, maxChars = 14000 } = {}) {
   const sourceDir = join(root, 'source');
   const chunks = [];

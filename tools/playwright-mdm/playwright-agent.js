@@ -94,6 +94,12 @@ export async function executeCommand(command) {
   }
 }
 
+/** Screenshot the agent's current page for the live-view stream. */
+export async function agentScreenshot(opts = { type: 'jpeg', quality: 50 }) {
+  const p = await getPage();
+  return p.screenshot(opts);
+}
+
 export async function closeAutomationBrowser() {
   if (browser) {
     await browser.close();

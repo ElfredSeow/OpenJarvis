@@ -27,6 +27,7 @@ import {
 import {
   navigateToGemini,
   sendPrompt,
+  sendPromptWithScreenshot,
   waitForResponseComplete,
   extractLatestResponse,
 } from './gemini.js';
@@ -42,6 +43,13 @@ const SESSIONS_DIR = pathJoin(__dirname, 'reports', 'gemini-sessions');
 let _browser = null;
 let _context = null;
 let _geminiPage = null;
+
+/** Public: the attached, signed-in Edge context (auto-launches the remembered
+ * profile if needed). Other modules (e.g. the LinkedIn poster) reuse this so
+ * they ride your existing logged-in session instead of a fresh browser. */
+export async function getEdgeContext() {
+  return getContext();
+}
 
 async function getContext() {
   // Reuse a live connection if we already have one.
@@ -117,6 +125,20 @@ export async function askGemini(prompt, { timeout = 120000 } = {}) {
 }
 
 // ---------------------------------------------------------------------------
+// VISION: hand Gemini a SCREENSHOT plus a prompt and get its reading back. Used
+// by the self-healing resolver so the engine can "see" the page and correct
+// itself when static selectors miss.
+// ---------------------------------------------------------------------------
+export async function askGeminiVision(prompt, screenshotBuffer, { timeout = 120000 } = {}) {
+  const page = await getGeminiPage();
+  await sendPromptWithScreenshot(page, prompt, screenshotBuffer);
+  await waitForResponseComplete(page, { timeout });
+  const response = await extractLatestResponse(page);
+  await logSession('vision', prompt, response);
+  return response;
+}
+
+// ---------------------------------------------------------------------------
 // ACT / RESEARCH: open a SEPARATE page to look at a live URL, hand what we see
 // to Gemini (on its dedicated tab), and return Gemini's analysis. The Gemini
 // conversation tab is never navigated, so no clobbering.
@@ -150,19 +172,49 @@ export async function research(url, objective, { maxChars = 6000, timeout = 1200
 // ACT (autonomous): ask Gemini to PLAN browser commands, then run them with the
 // Playwright agent. Gemini replies with ```json {...}``` command blocks.
 // ---------------------------------------------------------------------------
-export async function act(objective, { timeout = 120000 } = {}) {
-  const prompt =
+function agentPrompt(objective) {
+  return (
     `You are a browser automation planner for Open Jarvis. Goal: ${objective}.\n` +
     `Reply ONLY with one or more JSON command blocks in \`\`\`json fences.\n` +
     `Actions: navigate(url), click(text|selector), type(selector,text), extract(selector), ` +
-    `screenshot, scroll(direction), press(key), wait(ms).`;
-  const reply = await askGemini(prompt, { timeout });
+    `screenshot, scroll(direction), press(key), wait(ms).`
+  );
+}
+
+export async function act(objective, { timeout = 120000 } = {}) {
+  const reply = await askGemini(agentPrompt(objective), { timeout });
 
   const results = [];
   for (const command of parseCommands(reply)) {
     if (command.__error) { results.push({ type: 'error', error: command.__error, raw: command.raw }); continue; }
     results.push(await executeCommand(command));
   }
+  return { plan: reply, results };
+}
+
+// Streaming variant: emits onStep({label, image?, ...}) so the Hub can show a
+// live screen of what the agent is doing — a frame after each executed command.
+export async function actStream(objective, { onStep = () => {}, timeout = 120000 } = {}) {
+  onStep({ label: 'Planning with Gemini…' });
+  const reply = await askGemini(agentPrompt(objective), { timeout });
+  onStep({ label: 'Plan ready' });
+
+  const { executeCommand, agentScreenshot } = await import('./playwright-agent.js');
+  const commands = parseCommands(reply);
+  const results = [];
+  const shot = async (label, extra = {}) => {
+    let image = null;
+    try { image = (await agentScreenshot()).toString('base64'); } catch { /* page may not exist yet */ }
+    onStep({ label, image, ...extra });
+  };
+  for (const [i, command] of commands.entries()) {
+    if (command.__error) { results.push({ type: 'error', error: command.__error, raw: command.raw }); onStep({ label: `Step ${i + 1}: ${command.__error}` }); continue; }
+    onStep({ label: `Step ${i + 1}: ${command.action}${command.url ? ' → ' + command.url : ''}` });
+    const r = await executeCommand(command);
+    results.push(r);
+    await shot(`Step ${i + 1} done`, { result: r });
+  }
+  if (!commands.length) onStep({ label: 'No runnable commands were planned.' });
   return { plan: reply, results };
 }
 

@@ -11,7 +11,7 @@ import { existsSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { join, normalize, extname, basename, dirname } from 'node:path';
 
-import { scaffold, listProjects, projectDir, runProject, WORKSPACE } from './jarvis.js';
+import { scaffold, listProjects, projectDir, runProject, listProjectImages, WORKSPACE } from './jarvis.js';
 import { discoverEdgeProfiles, formatProfileLabel, getDefaultLocalStatePath } from './attach.js';
 import { loadConfig, saveConfig, LLM_PRESETS } from './config.js';
 import { coreAsk, coreStatus } from './core-bridge.js';
@@ -175,6 +175,42 @@ const server = createServer(async (req, res) => {
       catch (e) { return send(res, 200, { plan: `⚠ ${e.message}`, results: [], error: true }); }
     }
 
+    // Browser Agent (live) — streams a screen frame after each executed step.
+    if (p === '/api/agent/stream' && req.method === 'GET') {
+      const objective = url.searchParams.get('objective') ?? '';
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+      const emit = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      try { const { actStream } = await bridge(); emit('done', await actStream(objective, { onStep: (s) => emit('step', s) })); }
+      catch (e) { emit('error', e.message); }
+      return res.end();
+    }
+
+    // ---- LinkedIn Poster (live) ----
+    if (p === '/api/project-images' && req.method === 'GET') {
+      return send(res, 200, { images: await listProjectImages(url.searchParams.get('project') ?? '') });
+    }
+    if (p === '/api/linkedin/post' && req.method === 'GET') {
+      const name = url.searchParams.get('project') ?? '';
+      const text = url.searchParams.get('text') ?? '';
+      const keepOpen = url.searchParams.get('keep') !== '0';
+      const targetUrl = url.searchParams.get('url') || undefined;
+      let rels = [];
+      try { rels = JSON.parse(url.searchParams.get('images') || '[]'); } catch { rels = []; }
+      const root = projectDir(name);
+      const images = [];
+      for (const rel of Array.isArray(rels) ? rels : []) {
+        const full = normalize(join(root, rel));
+        if (full.startsWith(root) && existsSync(full)) images.push(full); // guard path escape
+      }
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+      const emit = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      try {
+        const { composeLinkedInPost } = await import('./linkedin.js');
+        emit('done', await composeLinkedInPost({ text, images, url: targetUrl, keepOpen, onStep: (s) => emit('step', s) }));
+      } catch (e) { emit('error', e.message); }
+      return res.end();
+    }
+
     // ---- Monitors (Phase 3) ----
     if (p === '/api/monitors' && req.method === 'GET')
       return send(res, 200, { monitors: await monitors.listMonitors(), schedulerEnabled: await monitors.getSchedulerEnabled() });
@@ -301,6 +337,8 @@ const MODULES = [
   { id:'home',     icon:'🏠', label:'Dashboard',        render: renderHome },
   { id:'ask',      icon:'💬', label:'Ask Jarvis',       render: renderAsk },
   { id:'marketing',icon:'📣', label:'Marketing Studio', render: renderMarketing },
+  { id:'linkedin', icon:'🔗', label:'LinkedIn Poster',  render: renderLinkedIn },
+  { id:'canvas',   icon:'🖼️', label:'Canvas',           render: renderCanvas },
   { id:'research', icon:'🔎', label:'Deep Research',    render: renderResearch },
   { id:'agent',    icon:'🤖', label:'Browser Agent',    render: renderAgent },
   { id:'monitors', icon:'⏰', label:'Monitors',         render: renderMonitors },
@@ -330,6 +368,21 @@ function engineToggle(){
   return '<select class="ipt engineSel" style="width:auto"><option value="gemini">Engine: Gemini (license)</option><option value="core">Engine: Local core</option></select>';
 }
 async function post(path, body){ return (await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json(); }
+
+// Live screen runner: open an SSE stream, swap the <img> on each frame, append
+// step labels to a log. Used by the LinkedIn Poster and the Browser Agent.
+function liveRun(streamUrl, opts){
+  const img=opts.imgEl, logEl=opts.logEl;
+  const add=t=>{ logEl.textContent+=t+'\\n'; logEl.scrollTop=logEl.scrollHeight; };
+  const es=new EventSource(streamUrl);
+  es.addEventListener('step', e=>{ const s=JSON.parse(e.data);
+    if(s.image && img){ img.src='data:image/jpeg;base64,'+s.image; img.style.display='block'; }
+    if(s.label) add('• '+s.label);
+  });
+  es.addEventListener('done', e=>{ add('✓ Done'); es.close(); let d={}; try{d=JSON.parse(e.data);}catch{} opts.onDone&&opts.onDone(d); });
+  es.addEventListener('error', e=>{ let m='ended'; try{m=JSON.parse(e.data);}catch{} add('✗ '+m); es.close(); opts.onError&&opts.onError(m); });
+  return es;
+}
 
 // ---- modules ----
 function renderHome(v){
@@ -378,12 +431,23 @@ function renderResearch(v){
   };
 }
 function renderAgent(v){
-  chatModule(v,'Browser Agent','Describe a task; Gemini plans browser commands, Playwright runs them (browser-native).',
-    '<textarea class="ipt" id="objective" rows="3" placeholder="e.g. open example.com and extract the headline"></textarea>', false);
-  $('#runBtn').onclick=async()=>{
-    const out=$('#out'); out.textContent='Planning & acting… (a browser will open)';
-    const r=await post('/api/agent',{objective:$('#objective').value});
-    out.textContent=(r.plan||'')+'\\n\\n--- results ---\\n'+JSON.stringify(r.results,null,2);
+  v.innerHTML='<h1 class="text-2xl font-bold mb-1">Browser Agent</h1>'+
+    '<p class="text-sm text-slate-400 mb-3">Describe a task; Gemini plans browser commands, Playwright runs them — and you watch the live screen.</p>'+
+    '<textarea class="ipt mb-2" id="objective" rows="3" placeholder="e.g. open example.com and extract the headline"></textarea>'+
+    '<button class="btn bg-emerald-600 text-white mb-3" id="runBtn">▶ Run with live view</button>'+
+    '<div class="grid grid-cols-2 gap-3">'+
+      '<div><div class="text-xs text-slate-400 mb-1 flex items-center gap-2">● Live screen</div>'+
+        '<img id="agView" class="rounded-lg border border-slate-700 bg-black/60 w-full" style="display:none">'+
+        '<div id="agEmpty" class="rounded-lg border border-slate-700 bg-black/60 h-40 flex items-center justify-center text-[11px] text-slate-500">live view appears here when you run</div></div>'+
+      '<pre id="out" class="text-xs bg-black/50 border border-slate-800 rounded-lg p-3 min-h-[160px] whitespace-pre-wrap text-slate-200"></pre>'+
+    '</div>';
+  $('#runBtn').onclick=()=>{
+    const obj=$('#objective').value; if(!obj.trim()) return;
+    $('#out').textContent=''; $('#agEmpty').style.display='none';
+    const btn=$('#runBtn'); btn.disabled=true; btn.textContent='⏳ Running…';
+    liveRun('/api/agent/stream?objective='+encodeURIComponent(obj),{imgEl:$('#agView'),logEl:$('#out'),
+      onDone:(d)=>{ btn.disabled=false; btn.textContent='▶ Run with live view'; $('#out').textContent+='\\n--- results ---\\n'+JSON.stringify(d.results||[],null,2); },
+      onError:()=>{ btn.disabled=false; btn.textContent='▶ Run with live view'; }});
   };
 }
 async function renderMonitors(v){
@@ -527,6 +591,94 @@ function runPipeline(name){
   es.addEventListener('log',e=>add(JSON.parse(e.data)));
   es.addEventListener('done',()=>{add('✓ Done — review & approve below.'); es.close(); btn.disabled=false; btn.textContent='▶ Run pipeline'; loadOutputs();});
   es.addEventListener('error',e=>{try{add('✗ '+JSON.parse(e.data));}catch{add('✗ ended');} es.close(); btn.disabled=false; btn.textContent='▶ Run pipeline';});
+}
+
+function renderLinkedIn(v){
+  v.innerHTML='<h1 class="text-2xl font-bold mb-1">LinkedIn Poster</h1>'+
+    '<p class="text-sm text-slate-400 mb-4">Jarvis writes the post & attaches your photo references in your signed-in Edge, then stops at the Post button so <span class="text-emerald-300">you click Post</span>.</p>'+
+    '<div class="grid grid-cols-2 gap-5">'+
+      '<div class="space-y-3">'+
+        '<select class="ipt" id="llProj"></select>'+
+        '<div class="flex items-center justify-between"><span class="text-xs text-slate-400">Post text</span>'+
+        '<button class="btn bg-slate-700 text-white" id="llLoad">⤓ Load from plan</button></div>'+
+        '<textarea class="ipt" id="llText" rows="6" placeholder="Write your post (or load it from the plan)…"></textarea>'+
+        '<div class="text-xs text-slate-400">Photo references</div>'+
+        '<div id="llImgs" class="grid grid-cols-2 gap-2 text-[11px] text-slate-300"></div>'+
+        '<button class="btn bg-emerald-600 text-white w-full" id="llRun">▶ Draft on LinkedIn (you press Post)</button>'+
+        '<div id="llMsg" class="text-[11px] text-amber-300/80"></div>'+
+      '</div>'+
+      '<div class="space-y-2">'+
+        '<div class="text-xs text-slate-400 flex items-center gap-2">● Live screen</div>'+
+        '<img id="llView" class="rounded-lg border border-slate-700 bg-black/60 w-full" style="display:none">'+
+        '<div id="llViewEmpty" class="rounded-lg border border-slate-700 bg-black/60 h-44 flex items-center justify-center text-[11px] text-slate-500">live view appears here when you run</div>'+
+        '<pre id="llLog" class="text-[11px] bg-black/50 border border-slate-800 rounded-lg p-2 h-32 overflow-y-auto whitespace-pre-wrap text-emerald-200"></pre>'+
+      '</div>'+
+    '</div>';
+  const proj=$('#llProj');
+  if(!STATE.projects.length){ proj.innerHTML='<option value="">No projects — create one in Marketing Studio</option>'; }
+  else STATE.projects.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;proj.appendChild(o);});
+  const loadImages=async()=>{
+    const box=$('#llImgs'); if(!proj.value){box.innerHTML='';return;} box.innerHTML='<span class="text-slate-500">loading…</span>';
+    const r=await(await fetch('/api/project-images?project='+encodeURIComponent(proj.value))).json();
+    box.innerHTML='';
+    if(!r.images||!r.images.length){ box.innerHTML='<span class="text-slate-500">No images yet — drop photos into the project\\'s source/ folder.</span>'; return; }
+    r.images.forEach(p=>{const l=document.createElement('label'); l.className='ipt flex items-center gap-1';
+      const cb=document.createElement('input'); cb.type='checkbox'; cb.value=p; l.appendChild(cb); l.appendChild(document.createTextNode(' '+p)); box.appendChild(l);});
+  };
+  const loadText=async()=>{
+    if(!proj.value){ $('#llMsg').textContent='Pick a project first.'; return; }
+    try{ const res=await fetch('/files/'+encodeURIComponent(proj.value)+'/marketing/linkedin/ideas/ideas.md');
+      if(res.ok){ $('#llText').value=await res.text(); $('#llMsg').textContent='Loaded marketing/linkedin/ideas/ideas.md — edit before drafting.'; }
+      else $('#llMsg').textContent='No plan text yet (run the Marketing pipeline first), or just type your post.';
+    }catch{ $('#llMsg').textContent=''; }
+  };
+  proj.onchange=loadImages;
+  $('#llLoad').onclick=loadText;
+  if(proj.value) loadImages();
+  $('#llRun').onclick=()=>{
+    const imgs=Array.from(document.querySelectorAll('#llImgs input:checked')).map(c=>c.value);
+    const text=$('#llText').value;
+    if(!proj.value){ $('#llMsg').textContent='Pick a project first.'; return; }
+    if(!text.trim()){ $('#llMsg').textContent='Write some post text first.'; return; }
+    $('#llLog').textContent=''; $('#llViewEmpty').style.display='none';
+    const btn=$('#llRun'); btn.disabled=true; btn.textContent='⏳ Drafting… watch the live screen';
+    const q='/api/linkedin/post?project='+encodeURIComponent(proj.value)+'&text='+encodeURIComponent(text)+'&images='+encodeURIComponent(JSON.stringify(imgs));
+    liveRun(q,{imgEl:$('#llView'),logEl:$('#llLog'),
+      onDone:(d)=>{ btn.disabled=false; btn.textContent='▶ Draft on LinkedIn (you press Post)';
+        $('#llMsg').textContent=d.ok?('✓ Composer ready in Edge — review and click Post. ('+(d.imageCount||0)+' image(s) attached)'):('⚠ '+(d.error||'failed')); },
+      onError:(m)=>{ btn.disabled=false; btn.textContent='▶ Draft on LinkedIn (you press Post)'; $('#llMsg').textContent='⚠ '+m; }});
+  };
+}
+
+async function renderCanvas(v){
+  v.innerHTML='<h1 class="text-2xl font-bold mb-1">Canvas</h1>'+
+    '<p class="text-sm text-slate-400 mb-4">View any HTML Jarvis created — landing pages, storyboards — rendered right here.</p>'+
+    '<div class="flex gap-2 mb-3 items-center flex-wrap"><select class="ipt" id="cvProj" style="max-width:240px"></select>'+
+      '<div id="cvOutputs" class="flex flex-wrap gap-2 text-xs items-center"></div></div>'+
+    '<div id="cvWrap" class="hidden rounded-xl border border-slate-700 overflow-hidden">'+
+      '<div class="bg-[#0b1220] border-b border-slate-800 px-3 py-1.5 flex items-center justify-between">'+
+      '<span class="text-xs text-slate-300" id="cvTitle">Canvas</span>'+
+      '<span class="flex gap-2"><a class="btn bg-slate-700 text-white" id="cvOpen" target="_blank">Open in tab</a>'+
+      '<button class="btn bg-rose-600/80 text-white" id="cvClose">Close</button></span></div>'+
+      '<iframe id="cvFrame" class="w-full bg-white" style="height:62vh" sandbox="allow-scripts allow-popups"></iframe>'+
+    '</div>';
+  const proj=$('#cvProj');
+  if(!STATE.projects.length){ proj.innerHTML='<option value="">No projects yet</option>'; $('#cvOutputs').innerHTML='<span class="text-slate-500">Create a project and run the pipeline first.</span>'; return; }
+  STATE.projects.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;proj.appendChild(o);});
+  function showCanvas(u,label){ $('#cvTitle').textContent='🖼️ '+label; $('#cvFrame').src=u; $('#cvOpen').href=u; $('#cvWrap').classList.remove('hidden'); }
+  const loadOuts=async()=>{
+    const box=$('#cvOutputs'); box.innerHTML='<span class="text-slate-500">loading…</span>';
+    const s=await(await fetch('/api/outputs?project='+encodeURIComponent(proj.value))).json();
+    box.innerHTML='';
+    if(!s.outputs||!s.outputs.length){ box.innerHTML='<span class="text-slate-500">No outputs yet — run the Marketing pipeline.</span>'; return; }
+    s.outputs.forEach(o=>{const btn=document.createElement('button');
+      btn.className='px-2.5 py-1.5 rounded-lg border '+(o.preview?'border-emerald-600 text-emerald-300':'border-slate-700 text-slate-300')+' hover:bg-slate-800';
+      btn.textContent=(o.preview?'🖼️ ':'📄 ')+o.label;
+      btn.onclick=()=>showCanvas(o.url,o.label); box.appendChild(btn);});
+  };
+  $('#cvClose').onclick=()=>{ $('#cvWrap').classList.add('hidden'); $('#cvFrame').src='about:blank'; };
+  proj.onchange=loadOuts;
+  loadOuts();
 }
 
 function renderSettings(v){
