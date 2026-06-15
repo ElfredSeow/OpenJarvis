@@ -151,7 +151,7 @@ const server = createServer(async (req, res) => {
     // Ask Jarvis — chat (engine switchable: local core or Gemini license)
     if (p === '/api/ask' && req.method === 'POST') {
       const b = await readBody(req);
-      if ((b.engine ?? 'gemini') === 'core') return send(res, 200, await coreAsk(b.prompt ?? ''));
+      if ((b.engine ?? 'gemini') === 'core') return send(res, 200, await coreAsk(b.prompt ?? '', { timeout: 25000 }));
       try { const { askGemini } = await bridge(); return send(res, 200, { text: await askGemini(b.prompt ?? ''), engine: 'gemini' }); }
       catch (e) { return send(res, 200, { text: `⚠ ${e.message}`, error: true }); }
     }
@@ -181,6 +181,18 @@ const server = createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
       const emit = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
       try { const { actStream } = await bridge(); emit('done', await actStream(objective, { onStep: (s) => emit('step', s) })); }
+      catch (e) { emit('error', e.message); }
+      return res.end();
+    }
+
+    // Browser Agent (vision loop) — sends a screenshot to Gemini before EVERY
+    // decision so it always sees the live browser state. Recovers from failures
+    // by feeding the error + a fresh screenshot back to Gemini automatically.
+    if (p === '/api/agent/vision-stream' && req.method === 'GET') {
+      const objective = url.searchParams.get('objective') ?? '';
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+      const emit = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      try { const { actVision } = await bridge(); emit('done', await actVision(objective, { onStep: (s) => emit('step', s) })); }
       catch (e) { emit('error', e.message); }
       return res.end();
     }
@@ -433,23 +445,35 @@ function renderResearch(v){
 }
 function renderAgent(v){
   v.innerHTML='<h1 class="text-2xl font-bold mb-1">Browser Agent</h1>'+
-    '<p class="text-sm text-slate-400 mb-3">Describe a task; Gemini plans browser commands, Playwright runs them — and you watch the live screen.</p>'+
-    '<textarea class="ipt mb-2" id="objective" rows="3" placeholder="e.g. open example.com and extract the headline"></textarea>'+
-    '<button class="btn bg-emerald-600 text-white mb-3" id="runBtn">▶ Run with live view</button>'+
+    '<p class="text-sm text-slate-400 mb-3">Describe a task. <strong class="text-emerald-300">Vision Mode</strong> sends a screenshot to Gemini before every decision — it sees the live browser and adapts if something goes wrong. Plan Mode asks Gemini to plan all steps upfront.</p>'+
+    '<textarea class="ipt mb-2" id="objective" rows="3" placeholder="e.g. go to google.com and search for open source AI tools"></textarea>'+
+    '<div class="flex gap-2 mb-3 items-center">'+
+      '<button class="btn bg-emerald-600 text-white" id="visionBtn">👁 Vision Mode (recommended)</button>'+
+      '<button class="btn bg-slate-700 text-slate-200" id="runBtn">▶ Plan Mode</button>'+
+    '</div>'+
+    '<div class="text-[11px] text-slate-500 mb-3" id="modeHint">Vision Mode: Gemini sees a screenshot after every action and decides the next step — self-corrects automatically on failure.</div>'+
     '<div class="grid grid-cols-2 gap-3">'+
       '<div><div class="text-xs text-slate-400 mb-1 flex items-center gap-2">● Live screen</div>'+
         '<img id="agView" class="rounded-lg border border-slate-700 bg-black/60 w-full" style="display:none">'+
         '<div id="agEmpty" class="rounded-lg border border-slate-700 bg-black/60 h-40 flex items-center justify-center text-[11px] text-slate-500">live view appears here when you run</div></div>'+
       '<pre id="out" class="text-xs bg-black/50 border border-slate-800 rounded-lg p-3 min-h-[160px] whitespace-pre-wrap text-slate-200"></pre>'+
     '</div>';
-  $('#runBtn').onclick=()=>{
+
+  function startRun(streamPath, label){
     const obj=$('#objective').value; if(!obj.trim()) return;
     $('#out').textContent=''; $('#agEmpty').style.display='none';
-    const btn=$('#runBtn'); btn.disabled=true; btn.textContent='⏳ Running…';
-    liveRun('/api/agent/stream?objective='+encodeURIComponent(obj),{imgEl:$('#agView'),logEl:$('#out'),
-      onDone:(d)=>{ btn.disabled=false; btn.textContent='▶ Run with live view'; $('#out').textContent+='\\n--- results ---\\n'+JSON.stringify(d.results||[],null,2); },
-      onError:()=>{ btn.disabled=false; btn.textContent='▶ Run with live view'; }});
-  };
+    const vBtn=$('#visionBtn'), pBtn=$('#runBtn');
+    vBtn.disabled=true; pBtn.disabled=true; vBtn.textContent='⏳ Running…'; pBtn.textContent='⏳ Running…';
+    liveRun(streamPath+encodeURIComponent(obj),{imgEl:$('#agView'),logEl:$('#out'),
+      onDone:(d)=>{ vBtn.disabled=false; pBtn.disabled=false; vBtn.textContent='👁 Vision Mode (recommended)'; pBtn.textContent='▶ Plan Mode';
+        const summary=d.summary?('\\n✅ '+d.summary):''; const results=d.results?('\\n--- commands ---\\n'+JSON.stringify(d.results,null,2)):'';
+        const steps=d.steps?.length?('\\n--- steps ---\\n'+d.steps.join('\\n')):'';
+        $('#out').textContent+=summary+results+steps; },
+      onError:()=>{ vBtn.disabled=false; pBtn.disabled=false; vBtn.textContent='👁 Vision Mode (recommended)'; pBtn.textContent='▶ Plan Mode'; }});
+  }
+
+  $('#visionBtn').onclick=()=>startRun('/api/agent/vision-stream?objective=','');
+  $('#runBtn').onclick=()=>startRun('/api/agent/stream?objective=','');
 }
 async function renderMonitors(v){
   const s=await(await fetch('/api/monitors')).json();

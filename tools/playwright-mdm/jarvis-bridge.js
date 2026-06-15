@@ -220,6 +220,170 @@ export async function actStream(objective, { onStep = () => {}, timeout = 120000
   return { plan: reply, results };
 }
 
+// ---------------------------------------------------------------------------
+// VISION ACT: continuous screenshot → Gemini → single-action loop.
+//
+// Unlike act/actStream (which plan all steps upfront then execute blind),
+// actVision sends a SCREENSHOT to Gemini before EVERY decision. Gemini sees
+// the live browser state and replies with ONE JSON action. After each action
+// another screenshot is captured and fed into the next Gemini call. Errors
+// are included as context so Gemini can self-recover instead of getting stuck.
+// ---------------------------------------------------------------------------
+
+function visionStepPrompt(objective, history, lastError) {
+  const lines = [
+    'You are a browser automation agent controlling a real web browser.',
+    `Objective: ${objective}`,
+  ];
+  if (history.length) {
+    lines.push('\nActions completed so far:');
+    history.forEach((h, i) => lines.push(`  ${i + 1}. ${h}`));
+  }
+  if (lastError) {
+    lines.push(`\nThe LAST action FAILED with this error: "${lastError}"`);
+    lines.push('Look carefully at the screenshot and try a DIFFERENT approach.');
+  }
+  lines.push(
+    '\nThe attached screenshot shows the CURRENT browser state.',
+    'What is the SINGLE NEXT ACTION to take toward completing the objective?',
+    '',
+    'Reply with exactly ONE JSON object — no markdown fences, no extra text:',
+    '  Navigate to URL:  {"action":"navigate","url":"https://..."}',
+    '  Click by text:    {"action":"click","text":"visible text of element"}',
+    '  Click by CSS:     {"action":"click","selector":"css-selector"}',
+    '  Type into field:  {"action":"type","selector":"css-selector","text":"value"}',
+    '  Scroll page:      {"action":"scroll","direction":"down"}  (or "up")',
+    '  Press a key:      {"action":"press","key":"Enter"}',
+    '  Wait:             {"action":"wait","ms":1500}',
+    '  Extract text:     {"action":"extract","selector":"body"}',
+    '  Task complete:    {"action":"done","summary":"what was accomplished"}',
+    '',
+    'RULES:',
+    '  - Use "done" when the objective is FULLY achieved or nothing more can be done.',
+    '  - Never repeat a failed action with the exact same parameters.',
+    '  - If an element is not visible, try scrolling down or waiting.',
+    '  - Prefer clicking by visible text over CSS selectors.',
+    '  - Reply with ONLY the JSON object — no explanations, no fences.',
+  );
+  return lines.join('\n');
+}
+
+// Parse a single JSON command object from Gemini's reply.
+// Strips markdown fences and finds the first balanced {} if plain JSON.parse fails.
+function parseOneCommand(reply) {
+  const cleaned = reply.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+  try { return JSON.parse(cleaned); } catch { /* fall through */ }
+  const start = cleaned.search(/\{/);
+  if (start === -1) return null;
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < cleaned.length; i++) {
+    const ch = cleaned[i];
+    if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === '"') inStr = false; }
+    else if (ch === '"') inStr = true;
+    else if (ch === '{') depth++;
+    else if (ch === '}' && --depth === 0) { try { return JSON.parse(cleaned.slice(start, i + 1)); } catch {} }
+  }
+  return null;
+}
+
+/**
+ * Continuous vision-grounded browser agent.
+ *
+ * Every Gemini call receives the current screenshot so it always "sees" the
+ * browser before deciding what to do next. On error the failure reason is
+ * included in the next prompt so Gemini can adapt instead of repeating the
+ * same broken action.
+ *
+ * @param {string} objective - Natural-language task description.
+ * @param {object} opts
+ * @param {Function} opts.onStep  - Callback({ label, image? }) for live UI updates.
+ * @param {number}  opts.maxSteps - Hard cap on loop iterations (default 40).
+ * @param {number}  opts.timeout  - Per-Gemini-call timeout ms (default 120000).
+ * @returns {{ ok, summary, steps }} Result object.
+ */
+export async function actVision(objective, { onStep = () => {}, maxSteps = 40, timeout = 120000 } = {}) {
+  const { executeCommand, agentScreenshot } = await import('./playwright-agent.js');
+  const history = [];
+  let lastError = null;
+  let consecutiveErrors = 0;
+
+  for (let step = 0; step < maxSteps; step++) {
+    // 1. Capture current browser state (screenshot feeds into the Gemini prompt)
+    let screenshot = null;
+    try { screenshot = await agentScreenshot({ type: 'jpeg', quality: 70 }); } catch { /* page not open yet */ }
+    const imageB64 = screenshot ? screenshot.toString('base64') : null;
+
+    // 2. Tell the UI what we see and that we're asking Gemini
+    onStep({ label: `Step ${step + 1}: analysing screen, asking Gemini what to do next…`, image: imageB64 });
+
+    // 3. Ask Gemini — always include the screenshot when available
+    const prompt = visionStepPrompt(objective, history, lastError);
+    let reply = '';
+    try {
+      reply = screenshot
+        ? await askGeminiVision(prompt, screenshot, { timeout })
+        : await askGemini(prompt, { timeout });
+    } catch (e) {
+      onStep({ label: `Gemini error: ${e.message}` });
+      return { ok: false, summary: `Gemini unreachable: ${e.message}`, steps: history };
+    }
+
+    // 4. Parse Gemini's reply as a single command
+    const command = parseOneCommand(reply);
+    if (!command?.action) {
+      consecutiveErrors++;
+      lastError = `Gemini replied with unparseable text: "${reply.slice(0, 100)}"`;
+      onStep({ label: `⚠ Could not parse Gemini reply — retrying (${consecutiveErrors}/3)…` });
+      if (consecutiveErrors >= 3) return { ok: false, summary: 'Repeated parse failures from Gemini', steps: history };
+      continue;
+    }
+
+    // 5. Objective achieved?
+    if (command.action === 'done') {
+      onStep({ label: `✅ Done: ${command.summary || 'task complete'}`, image: imageB64 });
+      return { ok: true, summary: command.summary || 'done', steps: history };
+    }
+
+    // 6. Log and emit what we're about to do
+    const actionLabel = command.url
+      ? `${command.action} → ${command.url}`
+      : command.text ? `${command.action} "${command.text}"`
+      : command.key  ? `${command.action} [${command.key}]`
+      : command.selector ? `${command.action} on ${command.selector}`
+      : command.action;
+    onStep({ label: `Step ${step + 1}: ${actionLabel}` });
+
+    // 7. Execute the action
+    const result = await executeCommand(command);
+
+    if (result.type === 'error') {
+      consecutiveErrors++;
+      lastError = result.error;
+      history.push(`[FAILED] ${actionLabel} — ${result.error}`);
+      onStep({ label: `⚠ Failed: ${result.error}` });
+      // After 5 consecutive failures give up — something is fundamentally wrong
+      if (consecutiveErrors >= 5) {
+        onStep({ label: '5 consecutive failures — stopping to avoid an infinite loop.' });
+        return { ok: false, summary: `Stuck after 5 consecutive failures: ${result.error}`, steps: history };
+      }
+      // Continue: the next iteration will show Gemini the current screenshot + lastError
+    } else {
+      consecutiveErrors = 0;
+      lastError = null;
+      history.push(actionLabel);
+      onStep({ label: `✓ ${actionLabel}` });
+
+      // Capture a fresh screenshot after each successful action and stream it
+      try {
+        const postShot = await agentScreenshot({ type: 'jpeg', quality: 70 });
+        onStep({ label: null, image: postShot.toString('base64') });
+      } catch { /* ignore if page closed */ }
+    }
+  }
+
+  return { ok: false, summary: `Max steps (${maxSteps}) reached without completing the objective`, steps: history };
+}
+
 // Extract the browser commands from Gemini's reply. Prefer explicit ```json
 // fences, but fall back to bare JSON — when the answer is read from Gemini's
 // *rendered* DOM the ``` fences are gone, leaving a plain JSON array/object.
