@@ -236,12 +236,26 @@ let busy = false;
 const MAX_STEPS = 8;
 
 async function agentLoop(userMessage) {
-  await sendPrompt(geminiPage, userMessage);
+  // Capture screenshot of the current browser state before every message to Gemini
+  const initSs = await executeCommand({ action: 'screenshot' });
+  if (initSs.type === 'screenshot') {
+    const buf = Buffer.from(initSs.screenshot, 'base64');
+    const attached = await sendPromptWithScreenshot(geminiPage, userMessage, buf);
+    if (!attached) {
+      // Image attach unavailable — fall back to text-only
+      await sendPrompt(geminiPage, userMessage);
+    }
+  } else {
+    await sendPrompt(geminiPage, userMessage);
+  }
   await waitForResponseComplete(geminiPage);
   let rawResponse = await extractLatestResponse(geminiPage);
 
   const allActionSummary = [];
-  const allScreenshots = [];
+  // Include the initial screenshot so the UI shows what was sent to Gemini
+  const allScreenshots = initSs.type === 'screenshot'
+    ? [{ b64: initSs.screenshot, url: initSs.url ?? '' }]
+    : [];
 
   for (let step = 0; step < MAX_STEPS; step++) {
     console.log(`\n--- Step ${step + 1}: Gemini (${rawResponse.length} chars) ---`);
