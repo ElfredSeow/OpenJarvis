@@ -3,6 +3,6 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "dependencies": {
-    "@anthropic-ai/claude-code": "^0.2"
+    "@anthropic-ai/claude-code": "^2.1"
   }
 }
